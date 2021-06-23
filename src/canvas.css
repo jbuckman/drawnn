@@ -1,0 +1,19 @@
+.canvas-container {
+  position: relative;
+}
+
+.canvas-container .canvas-back,
+.canvas-container .canvas-fore {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.canvas-back {
+  z-index: 0;
+}
+
+.canvas-fore {
+  z-index: 1;
+  cursor: crosshair;
+}
