@@ -1,17 +1,25 @@
 {
   "name": "drawnn",
   "version": "0.0.1",
-  "main": "index.js",
-  "author": "Liam",
-  "license": "MIT",
+  "description": "",
+  "main": "./src/index.js",
   "scripts": {
+    "build": "webpack --mode=production",
     "start": "webpack serve --mode=development --open --hot",
-    "build": "webpack --mode=production"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liamondrop/drawnn.git"
+  },
+  "author": "Liam Bowers",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/liamondrop/drawnn/issues"
   },
   "devDependencies": {
     "@babel/core": "^7.14.0",
     "@babel/preset-env": "^7.14.1",
-    "@babel/preset-react": "^7.13.13",
     "@babel/preset-typescript": "^7.13.0",
     "babel-loader": "^8.2.2",
     "css-loader": "^5.2.4",
@@ -22,5 +30,6 @@
     "webpack": "^5.36.2",
     "webpack-cli": "^4.6.0",
     "webpack-dev-server": "^3.11.2"
-  }
+  },
+  "homepage": "https://github.com/liamondrop/drawnn#readme"
 }

@@ -12,19 +12,18 @@ module.exports = function (_env, argv) {
     },
     devtool: 'inline-source-map',
     resolve: {
-      extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      extensions: ['.js', '.ts'],
     },
     module: {
       rules: [
         {
-          test: /\.(jsx?|tsx?)$/,
+          test: /\.[jt]s$/,
           exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
             options: {
               presets: [
                 '@babel/preset-env',
-                '@babel/preset-react',
                 '@babel/preset-typescript',
               ],
               targets: {
