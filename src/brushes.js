@@ -24,6 +24,7 @@ export class BasicBrush {
   }
 
   strokeStart(x, y) {
+    console.debug('BasicBrush.strokeStart', x, y);
     this.prevX = x;
     this.prevY = y;
     this.context.lineWidth = this.brushSize;
@@ -42,6 +43,7 @@ export class BasicBrush {
   }
 
   strokeEnd() {
+    console.debug('BasicBrush.strokeEnd');
     this.context.save();
   }
 }
@@ -57,7 +59,8 @@ export class Eraser {
   }
 
   updateBrushColor(brushColor) {
-    this.brushColor = brushColor;
+    // the eraser brush color should not change
+    return;
   }
 
   updateBrushSize(brushSize) {
@@ -69,6 +72,7 @@ export class Eraser {
   }
 
   strokeStart(x, y) {
+    console.debug('Eraser.strokeStart', x, y);
     this.prevX = x;
     this.prevY = y;
     this.context.lineWidth = this.brushSize;
@@ -87,6 +91,7 @@ export class Eraser {
   }
 
   strokeEnd() {
+    console.debug('Eraser.strokeEnd', x, y);
     this.context.save();
   }
 }

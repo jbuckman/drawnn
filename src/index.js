@@ -3,49 +3,34 @@ import './index.css';
 
 import CanvasContainer from './canvas';
 import Menu from './menu';
-import {BasicBrush} from './brushes';
 
 function init() {
   const defaultBrushSize = 1;
-  const defaultBrushColor = 'rgba(0,0,0,0)';
+  const defaultBrushColor = '#000';
   const defaultPaperColor = '#fff';
-  let brush;
 
-  const canvasContainer = CanvasContainer({
-    foregroundColor: defaultPaperColor,
-    canvasWidth: 32,
-    canvasHeight: 32,
-    patternWidth: 2,
-    patternHeight: 2,
-    handleCanvasMouseDown(x, y) {
-      const scaleX = Math.round(x * 0.1);
-      const scaleY = Math.round(y * 0.1);
-      brush.strokeStart(scaleX, scaleY);
-    },
-    handleCanvasMouseMove(x, y) {
-      const scaleX = Math.round(x * 0.1);
-      const scaleY = Math.round(y * 0.1);
-      brush.strokeMove(scaleX, scaleY);
-    },
-    handleCanvasMouseUp() {
-      brush.strokeEnd();
-    },
+  const canvasContainer = new CanvasContainer({
+    brushColor: defaultBrushColor,
+    brushSize: defaultBrushSize,
+    paperColor: defaultPaperColor,
+    canvasScale: 0.1,
+    canvasWidth: 320,
+    canvasHeight: 320,
+    patternWidth: 20,
+    patternHeight: 20,
   });
-
-  brush = new BasicBrush(canvasContainer.getForegroundContext());
-  brush.updateBrushColor(defaultBrushColor);
-  brush.updateBrushSize(defaultBrushSize);
 
   const menu = Menu({
     defaultBrushColor,
     defaultPaperColor,
     onPaperColorChange(event) {
       const eventTarget = event.currentTarget;
-      canvasContainer.updateForegroundFill(eventTarget.value);
+      canvasContainer.updatePaperColor(eventTarget.value);
+      canvasContainer.fillForeground();
     },
     onBrushColorChange(event) {
       const eventTarget = event.currentTarget;
-      brush.updateBrushColor(eventTarget.value);
+      canvasContainer.updateBrushColor(eventTarget.value);
     },
   });
 
