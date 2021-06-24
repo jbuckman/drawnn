@@ -27,6 +27,43 @@ function BackgroundCanvas(props) {
 }
 
 function ForegroundCanvas(props) {
+  function onCanvasMouseDown(event) {
+    const x = event.offsetX;
+    const y = event.offsetY;
+    props.handleCanvasMouseDown(x, y);
+    canvas.addEventListener('mousemove', onCanvasMouseMove, false);
+    canvas.addEventListener('mouseout', onCanvasMouseOut, false);
+    window.addEventListener('mouseup', onCanvasMouseUp, false);
+  }
+
+  function onCanvasMouseMove(event) {
+    const x = event.offsetX;
+    const y = event.offsetY;
+    props.handleCanvasMouseMove(x, y);
+  }
+
+  function onCanvasMouseOut(event) {
+    props.handleCanvasMouseUp();
+    canvas.removeEventListener('mouseout', onCanvasMouseOut, false);
+    canvas.addEventListener('mouseover', onCanvasMouseOver, false);
+  }
+
+  function onCanvasMouseOver(event) {
+    const x = event.offsetX;
+    const y = event.offsetY;
+    props.handleCanvasMouseDown(x, y);
+    canvas.removeEventListener('mouseover', onCanvasMouseOver, false);
+    canvas.addEventListener('mouseout', onCanvasMouseOut, false);
+  }
+
+  function onCanvasMouseUp() {
+    props.handleCanvasMouseUp();
+    canvas.removeEventListener('mousemove', onCanvasMouseMove, false);
+    canvas.removeEventListener('mouseout', onCanvasMouseOut, false);
+    canvas.removeEventListener('mouseover', onCanvasMouseOver, false);
+    window.removeEventListener('mouseup', onCanvasMouseUp, false);
+  }
+
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   canvas.className = 'canvas-fore';
@@ -36,6 +73,9 @@ function ForegroundCanvas(props) {
   context.fillStyle = props.fillColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
+
+  canvas.addEventListener('mousedown', onCanvasMouseDown, false);
+
   return {
     context,
     el: canvas,
@@ -51,9 +91,12 @@ const defaultProps = {
   foregroundColor: 'rgba(0,0,0,0)',
   canvasWidth: 320,
   canvasHeight: 320,
-  patternWidth: 16,
-  patternHeight: 16,
+  patternWidth: 20,
+  patternHeight: 20,
   patternColor: 'rgba(0,0,0,0.1)',
+  handleCanvasMouseDown(x, y) {},
+  handleCanvasMouseMove(x, y) {},
+  handleCanvasMouseUp() {},
 };
 
 export default function CanvasContainer(props = {}) {
@@ -64,20 +107,28 @@ export default function CanvasContainer(props = {}) {
     patternColor,
     patternHeight,
     patternWidth,
+    handleCanvasMouseDown,
+    handleCanvasMouseMove,
+    handleCanvasMouseUp,
   } = Object.assign(defaultProps, props);
 
   const bg = BackgroundCanvas({
     width: canvasWidth,
     height: canvasHeight,
-    patternWidth,
-    patternHeight,
+    patternWidth: patternWidth,
+    patternHeight: patternHeight,
     patternColor,
   });
+
   const fg = ForegroundCanvas({
     fillColor: foregroundColor,
     width: canvasWidth,
     height: canvasHeight,
+    handleCanvasMouseDown,
+    handleCanvasMouseMove,
+    handleCanvasMouseUp,
   });
+
   const container = document.createElement('div');
   container.className = 'canvas-container';
   container.appendChild(bg.el);
@@ -85,6 +136,9 @@ export default function CanvasContainer(props = {}) {
 
   return {
     el: container,
+    getForegroundContext() {
+      return fg.context;
+    },
     updateForegroundFill(fillColor) {
       fg.updateFillColor(fillColor);
     },
