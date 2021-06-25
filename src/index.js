@@ -6,8 +6,8 @@ import Menu from './menu';
 
 function init() {
   const defaultBrushSize = 1;
-  const defaultBrushColor = '#000';
-  const defaultPaperColor = '#fff';
+  const defaultBrushColor = '#000000';
+  const defaultPaperColor = '#ffffff';
 
   const canvasContainer = new CanvasContainer({
     brushColor: defaultBrushColor,

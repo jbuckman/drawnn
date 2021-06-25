@@ -2,7 +2,7 @@ import './menu.css';
 
 function ColorPicker(name, props = {}) {
   const defaultProps = {
-    defaultValue: '#000',
+    defaultValue: '#000000',
     onChange() {},
   };
   const {defaultValue, onChange} = Object.assign(defaultProps, props);
@@ -66,8 +66,8 @@ function MenuList(props = {}) {
 export default function Menu(props = {}) {
   const defaultProps = {
     defaultBrush: 'basic',
-    defaultBrushColor: 'black',
-    defaultPaperColor: 'white',
+    defaultBrushColor: '#000000',
+    defaultPaperColor: '#ffffff',
     onBrushChange() {},
     onBrushColorChange() {},
     onPaperColorChange() {},
