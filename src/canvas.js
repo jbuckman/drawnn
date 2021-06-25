@@ -1,6 +1,8 @@
 import {BasicBrush, Eraser} from './brushes';
 import './canvas.css';
 
+const CLEAR_COLOR = 'rgba(0,0,0,1)';
+
 function BackgroundCanvas(props) {
   // patterned background canvas
   const patternCanvas = document.createElement('canvas');
@@ -69,6 +71,7 @@ function ForegroundCanvas(props) {
   canvas.className = 'canvas-fore';
   canvas.width = props.width;
   canvas.height = props.height;
+  context.imageSmoothingEnabled = false;
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = props.fillColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -81,22 +84,31 @@ function ForegroundCanvas(props) {
     el: canvas,
     fill(fillColor) {
       console.debug('ForegroundCanvas.fill', fillColor);
+      context.save();
       context.globalCompositeOperation = 'source-over';
       context.fillStyle = fillColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
+      context.restore();
+    },
+    clear() {
+      console.debug('ForegroundCanvas.clear');
       context.save();
+      context.globalCompositeOperation = 'destination-out';
+      context.fillStyle = CLEAR_COLOR;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.restore();
     },
   };
 }
 
 const defaultProps = {
-  brushColor: '#000',
+  brushColor: '#000000',
   brushSize: 1,
   brushType: 'basic',
   canvasScale: 1,
   canvasWidth: 320,
   canvasHeight: 320,
-  paperColor: 'rgba(0,0,0,0)',
+  paperColor: '#ffffff',
   patternSize: 20,
   patternColor: 'rgba(0,0,0,0.1)',
   handleCanvasMouseDown(x, y) {},
@@ -125,9 +137,9 @@ export default class CanvasContainer {
     this.paperColor = paperColor;
     this.patternColor = patternColor;
 
-    this.canvasHeight = Math.round(canvasHeight * canvasScale);
-    this.canvasWidth = Math.round(canvasWidth * canvasScale);
-    this.patternSize = Math.round(patternSize * canvasScale);
+    this.canvasHeight = Math.ceil(canvasHeight * canvasScale);
+    this.canvasWidth = Math.ceil(canvasWidth * canvasScale);
+    this.patternSize = Math.ceil(patternSize * canvasScale);
 
     this.el = null;
     this.brush = null;
@@ -166,13 +178,18 @@ export default class CanvasContainer {
   }
 
   setupBrush(brushType) {
+    if (this.brush && this.brush.destroy) {
+      this.brush.destroy();
+    }
+
+    this.brushType = brushType;
     switch (brushType) {
-      case 'eraser':
+      case 'erase':
         this.brush = new Eraser(this.foregroundCanvas.context);
         this.brush.updateBrushSize(this.brushSize);
         break;
 
-      case 'basic':
+      case 'paint':
       default:
         this.brush = new BasicBrush(this.foregroundCanvas.context);
         this.brush.updateBrushColor(this.brushColor);
@@ -199,6 +216,10 @@ export default class CanvasContainer {
     this.foregroundCanvas.fill(this.paperColor);
   }
 
+  clearForeground() {
+    this.foregroundCanvas.clear();
+  }
+
   getImageData() {
     return this.foregroundCanvas.context.getImageData(
       0,
@@ -209,14 +230,14 @@ export default class CanvasContainer {
   }
 
   brushStrokeStart(x, y) {
-    const scaleX = Math.round(x * this.canvasScale);
-    const scaleY = Math.round(y * this.canvasScale);
+    const scaleX = Math.ceil(x * this.canvasScale);
+    const scaleY = Math.ceil(y * this.canvasScale);
     this.brush.strokeStart(scaleX, scaleY);
   }
 
   brushStrokeMove(x, y) {
-    const scaleX = Math.round(x * this.canvasScale);
-    const scaleY = Math.round(y * this.canvasScale);
+    const scaleX = Math.ceil(x * this.canvasScale);
+    const scaleY = Math.ceil(y * this.canvasScale);
     this.brush.strokeMove(scaleX, scaleY);
   }
 

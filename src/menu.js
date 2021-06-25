@@ -23,8 +23,8 @@ function ColorPicker(name, props = {}) {
 
 function BrushPicker(props = {}) {
   const defaultProps = {
-    defaultValue: 'basic',
-    options: ['basic', 'eraser'],
+    defaultValue: 'paint',
+    options: ['paint', 'erase'],
     onChange() {},
   };
   const {defaultValue, onChange, options} = Object.assign(defaultProps, props);
@@ -40,8 +40,8 @@ function BrushPicker(props = {}) {
 
   el.id = 'brush-picker';
   el.value = defaultValue;
-  el.alt = 'brush type';
-  el.title = 'brush type';
+  el.alt = 'brush mode';
+  el.title = 'brush mode';
   el.addEventListener('change', onChange);
 
   return {el};
@@ -80,13 +80,14 @@ function MenuList(props = {}) {
 
 export default function Menu(props = {}) {
   const defaultProps = {
-    defaultBrush: 'basic',
+    defaultBrush: 'paint',
     defaultBrushColor: '#000000',
     defaultPaperColor: '#ffffff',
     onBrushChange() {},
     onBrushColorChange() {},
     onPaperColorChange() {},
     onClearButtonClick() {},
+    onFillButtonClick() {},
   };
   const {
     defaultBrush,
@@ -95,6 +96,7 @@ export default function Menu(props = {}) {
     onBrushChange,
     onBrushColorChange,
     onPaperColorChange,
+    onFillButtonClick,
     onClearButtonClick,
   } = Object.assign(defaultProps, props);
 
@@ -110,12 +112,22 @@ export default function Menu(props = {}) {
     defaultValue: defaultBrush,
     onChange: onBrushChange,
   });
+  const fillButton = Button({
+    textContent: 'fill',
+    onClick: onFillButtonClick,
+  });
   const clearButton = Button({
-    textContent: 'fill / clear',
+    textContent: 'clear',
     onClick: onClearButtonClick,
   });
   const menuList = MenuList({
-    menuItems: [brushPicker, brushColorPicker, paperColorPicker, clearButton],
+    menuItems: [
+      brushPicker,
+      brushColorPicker,
+      paperColorPicker,
+      fillButton,
+      clearButton,
+    ],
   });
 
   const container = document.createElement('div');

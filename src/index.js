@@ -39,8 +39,11 @@ function init() {
       const eventTarget = event.currentTarget;
       canvasContainer.setupBrush(eventTarget.value);
     },
-    onClearButtonClick() {
+    onFillButtonClick() {
       canvasContainer.fillForeground();
+    },
+    onClearButtonClick() {
+      canvasContainer.clearForeground();
     },
   });
 
