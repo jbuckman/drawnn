@@ -112,7 +112,32 @@ button:not(:disabled) {
     border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
+.btn:hover {
+  color: #212529;
+}
+
 .btn-outline {
   color: #6c757d;
   border-color: #6c757d;
+}
+
+.data-button {
+  margin-top: 0.5rem;
+}
+
+button:focus:not(:focus-visible) {
+  outline: 0;
+}
+
+.btn:focus,
+.input-control:focus,
+.select-control:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.1rem rgb(13 110 253 / 25%);
+}
+
+.input-control:focus {
+  color: #212529;
+  background-color: #fff;
 }
