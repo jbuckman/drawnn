@@ -32,6 +32,10 @@ function init() {
       const eventTarget = event.currentTarget;
       canvasContainer.updateBrushColor(eventTarget.value);
     },
+    onBrushChange(event) {
+      const eventTarget = event.currentTarget;
+      canvasContainer.setupBrush(eventTarget.value);
+    },
   });
 
   const root = document.querySelector('#root');

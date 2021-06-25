@@ -81,6 +81,7 @@ function ForegroundCanvas(props) {
     el: canvas,
     fill(fillColor) {
       console.debug('ForegroundCanvas.fill', fillColor);
+      context.globalCompositeOperation = 'source-over';
       context.fillStyle = fillColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.save();
@@ -171,6 +172,7 @@ export default class CanvasContainer {
         this.brush.updateBrushSize(this.brushSize);
         break;
 
+      case 'basic':
       default:
         this.brush = new BasicBrush(this.foregroundCanvas.context);
         this.brush.updateBrushColor(this.brushColor);

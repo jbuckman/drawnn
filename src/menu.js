@@ -1,16 +1,16 @@
 import './menu.css';
 
-const defaultPickerProps = {
-  defaultValue: '#000',
-  onChange() {},
-};
+function ColorPicker(name, props = {}) {
+  const defaultProps = {
+    defaultValue: '#000',
+    onChange() {},
+  };
+  const {defaultValue, onChange} = Object.assign(defaultProps, props);
 
-function ColorPicker(name, props = defaultPickerProps) {
-  const {onChange} = Object.assign(defaultPickerProps, props);
   let el = document.createElement('input');
   el.type = 'color';
   el.id = `color-${name}`;
-  el.value = props.defaultValue;
+  el.value = defaultValue;
   el.addEventListener('change', onChange);
   return {
     el,
@@ -18,43 +18,68 @@ function ColorPicker(name, props = defaultPickerProps) {
   };
 }
 
-const defaultMenuListProps = {
-  menuItems: [],
-};
+function BrushPicker(props = {}) {
+  const defaultProps = {
+    defaultValue: 'basic',
+    options: ['basic', 'eraser'],
+    onChange() {},
+  };
+  const {defaultValue, onChange, options} = Object.assign(defaultProps, props);
 
-function MenuList(props = defaultMenuListProps) {
-  const {menuItems} = Object.assign(defaultMenuListProps, props);
+  let el = document.createElement('select');
+  options.forEach(value => {
+    let option = document.createElement('option');
+    option.value = value;
+    option.textContent = value;
+    el.appendChild(option);
+  });
+
+  el.id = `brush-picker`;
+  el.value = defaultValue;
+  el.addEventListener('change', onChange);
+
+  return {el};
+}
+
+function MenuList(props = {}) {
+  const defaultProps = {
+    menuItems: [],
+  };
+  const {menuItems} = Object.assign(defaultProps, props);
   let el = document.createElement('ul');
 
   menuItems.forEach(item => {
     let li = document.createElement('li');
-    let label = document.createElement('label');
-    label.htmlFor = item.el.id;
-    label.textContent = item.name;
     li.appendChild(item.el);
-    li.appendChild(label);
+    if (item.name) {
+      let label = document.createElement('label');
+      label.htmlFor = item.el.id;
+      label.textContent = item.name;
+      li.appendChild(label);
+    }
     el.appendChild(li);
   });
 
-  return {
-    el,
-  };
+  return {el};
 }
 
-const defaultMenuProps = {
-  defaultBrushColor: 'black',
-  defaultPaperColor: 'red',
-  onBrushColorChange() {},
-  onPaperColorChange() {},
-};
-
-export default function Menu(props = defaultMenuProps) {
+export default function Menu(props = {}) {
+  const defaultProps = {
+    defaultBrush: 'basic',
+    defaultBrushColor: 'black',
+    defaultPaperColor: 'white',
+    onBrushChange() {},
+    onBrushColorChange() {},
+    onPaperColorChange() {},
+  };
   const {
+    defaultBrush,
     defaultBrushColor,
     defaultPaperColor,
+    onBrushChange,
     onBrushColorChange,
     onPaperColorChange,
-  } = Object.assign(defaultMenuProps, props);
+  } = Object.assign(defaultProps, props);
 
   const brushColorPicker = ColorPicker('brush', {
     defaultValue: defaultBrushColor,
@@ -64,13 +89,17 @@ export default function Menu(props = defaultMenuProps) {
     defaultValue: defaultPaperColor,
     onChange: onPaperColorChange,
   });
-  const menuList = MenuList({menuItems: [brushColorPicker, paperColorPicker]});
+  const brushPicker = BrushPicker({
+    defaultValue: defaultBrush,
+    onChange: onBrushChange,
+  });
+  const menuList = MenuList({
+    menuItems: [brushColorPicker, paperColorPicker, brushPicker],
+  });
 
   const container = document.createElement('div');
   container.className = 'canvas-menu';
   container.appendChild(menuList.el);
 
-  return {
-    el: container,
-  };
+  return {el: container};
 }
