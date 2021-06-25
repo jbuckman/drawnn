@@ -93,9 +93,7 @@ function ForegroundCanvas(props) {
     clear() {
       console.debug('ForegroundCanvas.clear');
       context.save();
-      context.globalCompositeOperation = 'destination-out';
-      context.fillStyle = CLEAR_COLOR;
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.clearRect(0, 0, canvas.width, canvas.height);
       context.restore();
     },
   };
