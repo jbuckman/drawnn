@@ -1,5 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = function (_env, argv) {
   const isProduction = argv.mode === 'production';
@@ -10,7 +11,7 @@ module.exports = function (_env, argv) {
     devServer: {
       contentBase: path.join(__dirname, 'public'),
     },
-    devtool: 'inline-source-map',
+    devtool: 'source-map',
     resolve: {
       extensions: ['.js', '.ts'],
     },
@@ -22,10 +23,7 @@ module.exports = function (_env, argv) {
           use: {
             loader: 'babel-loader',
             options: {
-              presets: [
-                '@babel/preset-env',
-                '@babel/preset-typescript',
-              ],
+              presets: ['@babel/preset-env', '@babel/preset-typescript'],
               targets: {
                 esmodules: true,
               },
@@ -34,7 +32,7 @@ module.exports = function (_env, argv) {
         },
         {
           test: /\.css$/,
-          use: ['style-loader', 'css-loader'],
+          use: [MiniCssExtractPlugin.loader, 'css-loader'],
         },
       ],
     },
@@ -45,10 +43,11 @@ module.exports = function (_env, argv) {
       new HtmlWebpackPlugin({
         template: './public/index.html',
       }),
+      new MiniCssExtractPlugin(),
     ],
     output: {
       path: path.resolve(__dirname, outputPath),
-      filename: 'bundle.js',
+      filename: '[name].bundle.js',
       clean: true,
     },
   };
