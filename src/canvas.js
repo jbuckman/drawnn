@@ -125,9 +125,9 @@ export default class CanvasContainer {
     this.paperColor = paperColor;
     this.patternColor = patternColor;
 
-    this.canvasHeight = canvasHeight * canvasScale;
-    this.canvasWidth = canvasWidth * canvasScale;
-    this.patternSize = patternSize * canvasScale;
+    this.canvasHeight = Math.round(canvasHeight * canvasScale);
+    this.canvasWidth = Math.round(canvasWidth * canvasScale);
+    this.patternSize = Math.round(patternSize * canvasScale);
 
     this.el = null;
     this.brush = null;
@@ -197,6 +197,15 @@ export default class CanvasContainer {
 
   fillForeground() {
     this.foregroundCanvas.fill(this.paperColor);
+  }
+
+  getImageData() {
+    return this.foregroundCanvas.context.getImageData(
+      0,
+      0,
+      this.canvasWidth,
+      this.canvasHeight
+    );
   }
 
   brushStrokeStart(x, y) {

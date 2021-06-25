@@ -4,6 +4,10 @@ import './index.css';
 import CanvasContainer from './canvas';
 import Menu from './menu';
 
+document.addEventListener('DOMContentLoaded', function () {
+  init();
+});
+
 function init() {
   const defaultBrushSize = 1;
   const defaultBrushColor = '#000000';
@@ -40,13 +44,37 @@ function init() {
     },
   });
 
+  const dataButton = Button({
+    className: 'data-button',
+    textContent: 'get image data',
+    onClick() {
+      const imageData = canvasContainer.getImageData();
+      console.log(imageData);
+    },
+  });
+
   const root = document.querySelector('#root');
   if (root) {
     root.appendChild(menu.el);
     root.appendChild(canvasContainer.el);
+    root.appendChild(dataButton.el);
   }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  init();
-});
+function Button(props = {}) {
+  const defaultProps = {
+    className: '',
+    textContent: '',
+    onClick() {},
+  };
+  const {className, textContent, onClick} = Object.assign(defaultProps, props);
+
+  let el = document.createElement('button');
+  el.className = `btn btn-outline${className ? ' ' + className : ''}`;
+  el.textContent = textContent;
+  el.alt = textContent;
+  el.title = textContent;
+  el.addEventListener('click', onClick);
+
+  return {el};
+}
