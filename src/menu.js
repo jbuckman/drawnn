@@ -9,8 +9,11 @@ function ColorPicker(name, props = {}) {
 
   let el = document.createElement('input');
   el.type = 'color';
+  el.className = 'input-control input-control-color';
   el.id = `color-${name}`;
   el.value = defaultValue;
+  el.alt = `${name} color`;
+  el.title = `${name} color`;
   el.addEventListener('change', onChange);
   return {
     el,
@@ -27,6 +30,7 @@ function BrushPicker(props = {}) {
   const {defaultValue, onChange, options} = Object.assign(defaultProps, props);
 
   let el = document.createElement('select');
+  el.className = 'select-control';
   options.forEach(value => {
     let option = document.createElement('option');
     option.value = value;
@@ -34,9 +38,28 @@ function BrushPicker(props = {}) {
     el.appendChild(option);
   });
 
-  el.id = `brush-picker`;
+  el.id = 'brush-picker';
   el.value = defaultValue;
+  el.alt = 'brush type';
+  el.title = 'brush type';
   el.addEventListener('change', onChange);
+
+  return {el};
+}
+
+function Button(props = {}) {
+  const defaultProps = {
+    textContent: '',
+    onClick() {},
+  };
+  const {textContent, onClick} = Object.assign(defaultProps, props);
+
+  let el = document.createElement('button');
+  el.className = 'btn btn-outline';
+  el.textContent = textContent;
+  el.alt = textContent;
+  el.title = textContent;
+  el.addEventListener('click', onClick);
 
   return {el};
 }
@@ -46,18 +69,10 @@ function MenuList(props = {}) {
     menuItems: [],
   };
   const {menuItems} = Object.assign(defaultProps, props);
-  let el = document.createElement('ul');
+  let el = document.createDocumentFragment();
 
   menuItems.forEach(item => {
-    let li = document.createElement('li');
-    li.appendChild(item.el);
-    if (item.name) {
-      let label = document.createElement('label');
-      label.htmlFor = item.el.id;
-      label.textContent = item.name;
-      li.appendChild(label);
-    }
-    el.appendChild(li);
+    el.appendChild(item.el);
   });
 
   return {el};
@@ -71,6 +86,7 @@ export default function Menu(props = {}) {
     onBrushChange() {},
     onBrushColorChange() {},
     onPaperColorChange() {},
+    onClearButtonClick() {},
   };
   const {
     defaultBrush,
@@ -79,6 +95,7 @@ export default function Menu(props = {}) {
     onBrushChange,
     onBrushColorChange,
     onPaperColorChange,
+    onClearButtonClick,
   } = Object.assign(defaultProps, props);
 
   const brushColorPicker = ColorPicker('brush', {
@@ -93,8 +110,12 @@ export default function Menu(props = {}) {
     defaultValue: defaultBrush,
     onChange: onBrushChange,
   });
+  const clearButton = Button({
+    textContent: 'fill / clear',
+    onClick: onClearButtonClick,
+  });
   const menuList = MenuList({
-    menuItems: [brushColorPicker, paperColorPicker, brushPicker],
+    menuItems: [brushPicker, brushColorPicker, paperColorPicker, clearButton],
   });
 
   const container = document.createElement('div');

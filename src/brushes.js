@@ -1,5 +1,5 @@
 const DEFAULT_BRUSH_SIZE = 10;
-const DEFAULT_BRUSH_COLOR = '#000';
+const DEFAULT_BRUSH_COLOR = '#000000';
 
 export class BasicBrush {
   constructor(context) {
@@ -26,6 +26,7 @@ export class BasicBrush {
     console.debug('BasicBrush.strokeStart', x, y);
     this.prevX = x;
     this.prevY = y;
+    this.context.save();
     this.context.globalCompositeOperation = 'source-over';
     this.context.lineWidth = this.brushSize;
     this.context.strokeStyle = this.brushColor;
@@ -44,7 +45,7 @@ export class BasicBrush {
 
   strokeEnd() {
     console.debug('BasicBrush.strokeEnd');
-    this.context.save();
+    this.context.restore();
   }
 }
 
@@ -74,6 +75,7 @@ export class Eraser {
     console.debug('Eraser.strokeStart', x, y);
     this.prevX = x;
     this.prevY = y;
+    this.context.save();
     this.context.globalCompositeOperation = 'destination-out';
     this.context.lineWidth = this.brushSize;
     this.context.strokeStyle = this.brushColor;
@@ -92,6 +94,6 @@ export class Eraser {
 
   strokeEnd() {
     console.debug('Eraser.strokeEnd');
-    this.context.save();
+    this.context.restore();
   }
 }

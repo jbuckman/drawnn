@@ -26,7 +26,6 @@ function init() {
     onPaperColorChange(event) {
       const eventTarget = event.currentTarget;
       canvasContainer.updatePaperColor(eventTarget.value);
-      canvasContainer.fillForeground();
     },
     onBrushColorChange(event) {
       const eventTarget = event.currentTarget;
@@ -35,6 +34,9 @@ function init() {
     onBrushChange(event) {
       const eventTarget = event.currentTarget;
       canvasContainer.setupBrush(eventTarget.value);
+    },
+    onClearButtonClick() {
+      canvasContainer.fillForeground();
     },
   });
 
