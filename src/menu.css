@@ -1,0 +1,36 @@
+.canvas-menu {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  width: 100%;
+}
+
+.canvas-menu {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.canvas-menu > :not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.canvas-menu > :not(:first-child) {
+  margin-left: -1px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.canvas-menu .btn {
+  position: relative;
+  z-index: 2;
+}
+
+.canvas-menu > .input-control,
+.canvas-menu > .select-control {
+  position: relative;
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+}
