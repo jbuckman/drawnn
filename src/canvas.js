@@ -77,7 +77,9 @@ function ForegroundCanvas(props) {
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
 
-  canvas.addEventListener('mousedown', onCanvasMouseDown, false);
+  if (typeof props.handleCanvasMouseDown === 'function') {
+    canvas.addEventListener('mousedown', onCanvasMouseDown, false);
+  }
 
   return {
     context,
@@ -102,7 +104,7 @@ function ForegroundCanvas(props) {
 const defaultProps = {
   brushColor: '#000000',
   brushSize: 1,
-  brushType: 'basic',
+  brushType: 'paint',
   canvasScale: 1,
   canvasWidth: 320,
   canvasHeight: 320,
@@ -135,38 +137,45 @@ export default class CanvasContainer {
     this.paperColor = paperColor;
     this.patternColor = patternColor;
 
-    this.canvasHeight = Math.ceil(canvasHeight * canvasScale);
-    this.canvasWidth = Math.ceil(canvasWidth * canvasScale);
+    this.canvasHeight = canvasHeight;
+    this.canvasWidth = canvasWidth;
+    this.canvasHeightComputed = Math.ceil(canvasHeight * canvasScale);
+    this.canvasWidthComputed = Math.ceil(canvasWidth * canvasScale);
     this.patternSize = Math.ceil(patternSize * canvasScale);
 
     this.el = null;
     this.brush = null;
     this.backgroundCanvas = null;
     this.foregroundCanvas = null;
-
-    this.initDOMElements();
-    this.setupBrush(brushType);
   }
 
-  initDOMElements() {
+  initDOMElements(initBrushEventHandlers = false) {
     const bg = BackgroundCanvas({
-      width: this.canvasWidth,
-      height: this.canvasHeight,
+      width: this.canvasWidthComputed,
+      height: this.canvasHeightComputed,
       patternSize: this.patternSize,
       patternColor: this.patternColor,
     });
 
     const fg = ForegroundCanvas({
-      width: this.canvasWidth,
-      height: this.canvasHeight,
+      width: this.canvasWidthComputed,
+      height: this.canvasHeightComputed,
       fillColor: this.paperColor,
-      handleCanvasMouseDown: this.brushStrokeStart.bind(this),
-      handleCanvasMouseMove: this.brushStrokeMove.bind(this),
-      handleCanvasMouseUp: this.brushStrokeEnd.bind(this),
+      handleCanvasMouseDown: initBrushEventHandlers
+        ? this.brushStrokeStart.bind(this)
+        : null,
+      handleCanvasMouseMove: initBrushEventHandlers
+        ? this.brushStrokeMove.bind(this)
+        : null,
+      handleCanvasMouseUp: initBrushEventHandlers
+        ? this.brushStrokeEnd.bind(this)
+        : null,
     });
 
     let container = document.createElement('div');
     container.className = 'canvas-container';
+    container.style.height = `${this.canvasHeight}px`;
+    container.style.width = `${this.canvasWidth}px`;
     container.appendChild(bg.el);
     container.appendChild(fg.el);
 
@@ -222,21 +231,31 @@ export default class CanvasContainer {
     return this.foregroundCanvas.context.getImageData(
       0,
       0,
-      this.canvasWidth,
-      this.canvasHeight
+      this.canvasWidthComputed,
+      this.canvasHeightComputed
     );
   }
 
+  computeCanvasX(xValue) {
+    const xRatio = this.canvasWidth / this.foregroundCanvas.el.clientWidth;
+    return Math.ceil(xValue * xRatio * this.canvasScale);
+  }
+
+  computeCanvasY(yValue) {
+    const yRatio = this.canvasHeight / this.foregroundCanvas.el.clientHeight;
+    return Math.ceil(yValue * yRatio * this.canvasScale);
+  }
+
   brushStrokeStart(x, y) {
-    const scaleX = Math.ceil(x * this.canvasScale);
-    const scaleY = Math.ceil(y * this.canvasScale);
-    this.brush.strokeStart(scaleX, scaleY);
+    const canvasX = this.computeCanvasX(x);
+    const canvasY = this.computeCanvasY(y);
+    this.brush.strokeStart(canvasX, canvasY);
   }
 
   brushStrokeMove(x, y) {
-    const scaleX = Math.ceil(x * this.canvasScale);
-    const scaleY = Math.ceil(y * this.canvasScale);
-    this.brush.strokeMove(scaleX, scaleY);
+    const canvasX = this.computeCanvasX(x);
+    const canvasY = this.computeCanvasY(y);
+    this.brush.strokeMove(canvasX, canvasY);
   }
 
   brushStrokeEnd() {

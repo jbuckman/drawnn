@@ -24,11 +24,6 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-#root {
-  width: 320px;
-  margin: 0 auto;
-}
-
 .input-control {
   display: block;
   width: 100%;

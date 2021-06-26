@@ -12,17 +12,25 @@ function init() {
   const defaultBrushSize = 1;
   const defaultBrushColor = '#000000';
   const defaultPaperColor = '#ffffff';
+  const defaultBrushType = 'paint';
+  const canvasScale = 0.1;
+  const canvasWidth = 320;
+  const canvasHeight = 320;
+  const patternWidth = 20;
+  const patternHeight = 20;
 
   const canvasContainer = new CanvasContainer({
     brushColor: defaultBrushColor,
     brushSize: defaultBrushSize,
     paperColor: defaultPaperColor,
-    canvasScale: 0.1,
-    canvasWidth: 320,
-    canvasHeight: 320,
-    patternWidth: 20,
-    patternHeight: 20,
+    canvasScale,
+    canvasWidth,
+    canvasHeight,
+    patternWidth,
+    patternHeight,
   });
+  canvasContainer.initDOMElements(true);
+  canvasContainer.setupBrush(defaultBrushType);
 
   const menu = Menu({
     defaultBrushColor,
@@ -58,9 +66,13 @@ function init() {
 
   const root = document.querySelector('#root');
   if (root) {
-    root.appendChild(menu.el);
-    root.appendChild(canvasContainer.el);
-    root.appendChild(dataButton.el);
+    let widget = document.createElement('div');
+    widget.className = 'canvas-widget';
+    widget.appendChild(menu.el)
+    widget.appendChild(canvasContainer.el);
+    widget.appendChild(dataButton.el);
+
+    root.appendChild(widget);
   }
 }
 
