@@ -108,7 +108,7 @@ const defaultProps = {
   canvasScale: 1,
   canvasWidth: 320,
   canvasHeight: 320,
-  paperColor: '#ffffff',
+  paperColor: 'rgba(0,0,0,0)',
   patternSize: 20,
   patternColor: 'rgba(0,0,0,0.1)',
   handleCanvasMouseDown(x, y) {},
@@ -234,6 +234,10 @@ export default class CanvasContainer {
       this.canvasWidthComputed,
       this.canvasHeightComputed
     );
+  }
+
+  putImageData(imageData) {
+    this.foregroundCanvas.context.putImageData(imageData, 0, 0);
   }
 
   computeCanvasX(xValue) {

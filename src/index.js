@@ -19,7 +19,7 @@ function init() {
   const patternWidth = 20;
   const patternHeight = 20;
 
-  const canvasContainer = new CanvasContainer({
+  const sourceCanvas = new CanvasContainer({
     brushColor: defaultBrushColor,
     brushSize: defaultBrushSize,
     paperColor: defaultPaperColor,
@@ -29,50 +29,70 @@ function init() {
     patternWidth,
     patternHeight,
   });
-  canvasContainer.initDOMElements(true);
-  canvasContainer.setupBrush(defaultBrushType);
+  sourceCanvas.initDOMElements(true);
+  sourceCanvas.setupBrush(defaultBrushType);
+
+  const targetCanvas = new CanvasContainer({
+    canvasScale,
+    canvasWidth,
+    canvasHeight,
+    patternWidth,
+    patternHeight,
+  });
+  targetCanvas.initDOMElements(false);
+  targetCanvas.clearForeground();
 
   const menu = Menu({
     defaultBrushColor,
     defaultPaperColor,
     onPaperColorChange(event) {
       const eventTarget = event.currentTarget;
-      canvasContainer.updatePaperColor(eventTarget.value);
+      sourceCanvas.updatePaperColor(eventTarget.value);
     },
     onBrushColorChange(event) {
       const eventTarget = event.currentTarget;
-      canvasContainer.updateBrushColor(eventTarget.value);
+      sourceCanvas.updateBrushColor(eventTarget.value);
     },
     onBrushChange(event) {
       const eventTarget = event.currentTarget;
-      canvasContainer.setupBrush(eventTarget.value);
+      sourceCanvas.setupBrush(eventTarget.value);
     },
     onFillButtonClick() {
-      canvasContainer.fillForeground();
+      sourceCanvas.fillForeground();
     },
     onClearButtonClick() {
-      canvasContainer.clearForeground();
+      sourceCanvas.clearForeground();
     },
   });
 
   const dataButton = Button({
     className: 'data-button',
-    textContent: 'get image data',
+    textContent: 'copy image data \u203A',
     onClick() {
-      const imageData = canvasContainer.getImageData();
+      const imageData = sourceCanvas.getImageData();
+      targetCanvas.putImageData(imageData);
       console.log(imageData);
     },
   });
 
   const root = document.querySelector('#root');
   if (root) {
-    let widget = document.createElement('div');
-    widget.className = 'canvas-widget';
-    widget.appendChild(menu.el)
-    widget.appendChild(canvasContainer.el);
-    widget.appendChild(dataButton.el);
+    const frag = document.createDocumentFragment();
 
-    root.appendChild(widget);
+    let col;
+    col = document.createElement('div');
+    col.className = 'canvas-column source';
+    col.appendChild(menu.el);
+    col.appendChild(sourceCanvas.el);
+    col.appendChild(dataButton.el);
+    frag.appendChild(col);
+
+    col = document.createElement('div');
+    col.className = 'canvas-column target';
+    col.appendChild(targetCanvas.el);
+    frag.appendChild(col);
+
+    root.appendChild(frag);
   }
 }
 

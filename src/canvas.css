@@ -1,6 +1,16 @@
-.canvas-widget {
-  width: 320px;
-  margin: 0 auto;
+#root {
+  display: flex;
+  justify-content: center;
+}
+
+.canvas-column {
+  width: 336px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.canvas-column.target {
+  margin-top: calc(1rem + 38px);
 }
 
 .canvas-container {
