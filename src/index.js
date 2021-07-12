@@ -67,11 +67,22 @@ function init() {
 
   const dataButton = Button({
     className: 'data-button',
-    textContent: 'copy image data \u203A',
+    textContent: 'start training \u203A',
     onClick() {
       const imageData = sourceCanvas.getImageData();
-      targetCanvas.putImageData(imageData);
-      console.log(imageData);
+      var dataset = [];
+      for (var x=0; x<imageData.width; x++) {
+      for (var y=0; y<imageData.height; y++) {
+          var input = [x,y];
+          var array_loc = (y * imageData.width + x) * 4;
+          var output = [imageData.data[array_loc + 0],
+                    imageData.data[array_loc + 1],
+                    imageData.data[array_loc + 2]];
+          var in_dataset = imageData.data[array_loc + 3];
+          if (in_dataset != 0) dataset.push([input, output]);
+      }}
+      // targetCanvas.putImageData(imageData);
+      console.log(dataset);
     },
   });
 
