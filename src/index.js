@@ -125,6 +125,23 @@ function init() {
 
     root.appendChild(frag);
   }
+
+  document.addEventListener('drop', async event => {
+  if (!event.dataTransfer.files.length)
+    return;
+  event.preventDefault();
+  const file = await event.dataTransfer.files.item(0);
+  const image = new Image();
+  image.src = URL.createObjectURL(file);
+  await new Promise(x => image.onload = x);
+  const workCanvas = document.createElement('canvas');
+  workCanvas.width = 32;
+  workCanvas.height = 32;
+  const ctx = workCanvas.getContext('2d');
+  ctx.drawImage(image, 0, 0, 32, 32);
+  const imageData = ctx.getImageData(0, 0, image.width, image.height);
+  sourceCanvas.putImageData(imageData)
+});
 }
 
 function Button(props = {}) {
@@ -144,3 +161,13 @@ function Button(props = {}) {
 
   return {el};
 }
+
+
+document.addEventListener('dragover', event => {
+  event.preventDefault();
+  document.body.classList.toggle('dragging', true);
+});
+
+document.addEventListener('dragend', event => {
+  document.body.classList.toggle('dragging', false);
+});
