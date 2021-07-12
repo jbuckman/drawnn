@@ -102,13 +102,12 @@ function ForegroundCanvas(props) {
 }
 
 const defaultProps = {
-  brushColor: '#000000',
+  color: '#000000',
   brushSize: 1,
   brushType: 'paint',
   canvasScale: 1,
   canvasWidth: 320,
   canvasHeight: 320,
-  paperColor: 'rgba(0,0,0,0)',
   patternSize: 20,
   patternColor: 'rgba(0,0,0,0.1)',
   handleCanvasMouseDown(x, y) {},
@@ -119,22 +118,20 @@ const defaultProps = {
 export default class CanvasContainer {
   constructor(props) {
     const {
-      brushColor,
+      color,
       brushSize,
       brushType,
       canvasScale,
       canvasHeight,
       canvasWidth,
-      paperColor,
       patternColor,
       patternSize,
     } = Object.assign(defaultProps, props);
 
-    this.brushColor = brushColor;
+    this.color = color;
     this.brushSize = brushSize;
     this.brushType = brushType;
     this.canvasScale = canvasScale;
-    this.paperColor = paperColor;
     this.patternColor = patternColor;
 
     this.canvasHeight = canvasHeight;
@@ -160,7 +157,7 @@ export default class CanvasContainer {
     const fg = ForegroundCanvas({
       width: this.canvasWidthComputed,
       height: this.canvasHeightComputed,
-      fillColor: this.paperColor,
+      fillColor: this.color,
       handleCanvasMouseDown: initBrushEventHandlers
         ? this.brushStrokeStart.bind(this)
         : null,
@@ -199,15 +196,15 @@ export default class CanvasContainer {
       case 'paint':
       default:
         this.brush = new BasicBrush(this.foregroundCanvas.context);
-        this.brush.updateBrushColor(this.brushColor);
+        this.brush.updateColor(this.color);
         this.brush.updateBrushSize(this.brushSize);
         break;
     }
   }
 
-  updateBrushColor(brushColor) {
-    this.brushColor = brushColor;
-    this.brush.updateBrushColor(brushColor);
+  updateColor(color) {
+    this.color = color;
+    this.brush.updateColor(color);
   }
 
   updateBrushSize(brushSize) {
@@ -215,12 +212,8 @@ export default class CanvasContainer {
     this.brush.updateBrushSize(brushSize);
   }
 
-  updatePaperColor(paperColor) {
-    this.paperColor = paperColor;
-  }
-
   fillForeground() {
-    this.foregroundCanvas.fill(this.paperColor);
+    this.foregroundCanvas.fill(this.color);
   }
 
   clearForeground() {

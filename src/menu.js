@@ -81,32 +81,24 @@ function MenuList(props = {}) {
 export default function Menu(props = {}) {
   const defaultProps = {
     defaultBrush: 'paint',
-    defaultBrushColor: '#000000',
-    defaultPaperColor: '#ffffff',
+    defaultColor: '#000000',
     onBrushChange() {},
-    onBrushColorChange() {},
-    onPaperColorChange() {},
+    onColorChange() {},
     onClearButtonClick() {},
     onFillButtonClick() {},
   };
   const {
     defaultBrush,
-    defaultBrushColor,
-    defaultPaperColor,
+    defaultColor,
     onBrushChange,
-    onBrushColorChange,
-    onPaperColorChange,
+    onColorChange,
     onFillButtonClick,
     onClearButtonClick,
   } = Object.assign(defaultProps, props);
 
-  const brushColorPicker = ColorPicker('brush', {
-    defaultValue: defaultBrushColor,
-    onChange: onBrushColorChange,
-  });
-  const paperColorPicker = ColorPicker('paper', {
-    defaultValue: defaultPaperColor,
-    onChange: onPaperColorChange,
+  const colorPicker = ColorPicker('brush', {
+    defaultValue: defaultColor,
+    onChange: onColorChange,
   });
   const brushPicker = BrushPicker({
     defaultValue: defaultBrush,
@@ -123,8 +115,7 @@ export default function Menu(props = {}) {
   const menuList = MenuList({
     menuItems: [
       brushPicker,
-      brushColorPicker,
-      paperColorPicker,
+      colorPicker,
       fillButton,
       clearButton,
     ],

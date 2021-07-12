@@ -5,7 +5,8 @@ import CanvasContainer from './canvas';
 import Menu from './menu';
 import MyWorker from "worker-loader!./training.worker.js";
 
-const worker = new MyWorker();
+let worker = new MyWorker();
+var training = false;
 
 document.addEventListener('DOMContentLoaded', function () {
   init();
@@ -13,8 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function init() {
   const defaultBrushSize = 1;
-  const defaultBrushColor = '#000000';
-  const defaultPaperColor = '#ffffff';
+  const defaultColor = '#000000';
   const defaultBrushType = 'paint';
   const canvasScale = 0.1;
   const canvasWidth = 320;
@@ -23,9 +23,8 @@ function init() {
   const patternHeight = 20;
 
   const sourceCanvas = new CanvasContainer({
-    brushColor: defaultBrushColor,
+    color: defaultColor,
     brushSize: defaultBrushSize,
-    paperColor: defaultPaperColor,
     canvasScale,
     canvasWidth,
     canvasHeight,
@@ -46,15 +45,10 @@ function init() {
   targetCanvas.clearForeground();
 
   const menu = Menu({
-    defaultBrushColor,
-    defaultPaperColor,
-    onPaperColorChange(event) {
+    defaultColor,
+    onColorChange(event) {
       const eventTarget = event.currentTarget;
-      sourceCanvas.updatePaperColor(eventTarget.value);
-    },
-    onBrushColorChange(event) {
-      const eventTarget = event.currentTarget;
-      sourceCanvas.updateBrushColor(eventTarget.value);
+      sourceCanvas.updateColor(eventTarget.value);
     },
     onBrushChange(event) {
       const eventTarget = event.currentTarget;
@@ -72,38 +66,45 @@ function init() {
     className: 'data-button',
     textContent: 'start training \u203A',
     onClick() {
-      const imageData = sourceCanvas.getImageData();
-      var dataset_inputs = [];
-      var dataset_outputs = [];
-      for (var x=0; x<imageData.width; x++) {
-      for (var y=0; y<imageData.height; y++) {
-          var input = [x/imageData.width,y/imageData.height];
-          var array_loc = (y * imageData.width + x) * 4;
-          var output = [imageData.data[array_loc + 0]/255,
-                        imageData.data[array_loc + 1]/255,
-                        imageData.data[array_loc + 2]/255];
-          var in_dataset = imageData.data[array_loc + 3];
-          if (in_dataset != 0) {
-            dataset_inputs.push(input);
-            dataset_outputs.push(output);
+      if (!training) {
+        const imageData = sourceCanvas.getImageData();
+        var dataset_inputs = [];
+        var dataset_outputs = [];
+        for (var x=0; x<imageData.width; x++) {
+        for (var y=0; y<imageData.height; y++) {
+            var input = [x/imageData.width,y/imageData.height];
+            var array_loc = (y * imageData.width + x) * 4;
+            var output = [imageData.data[array_loc + 0]/255,
+                          imageData.data[array_loc + 1]/255,
+                          imageData.data[array_loc + 2]/255];
+            var in_dataset = imageData.data[array_loc + 3];
+            if (in_dataset != 0) {
+              dataset_inputs.push(input);
+              dataset_outputs.push(output);
+            }
+        }}
+        training = true;
+        this.textContent = 'stop training \u203A';
+        worker = new MyWorker();
+        worker.onmessage = event => {
+          const data = event.data;
+          if (data.command == 'update') {
+            const oldImageData = targetCanvas.getImageData();
+            const img = new Uint8ClampedArray(data.image);
+            const newImageData = new ImageData(img, oldImageData.width, oldImageData.height);
+            targetCanvas.putImageData(newImageData);
           }
-      }}
-      // console.log(imageData);
-      worker.postMessage({command: 'start',
-                         inputs: dataset_inputs,
-                         outputs: dataset_outputs})
+        };
+        worker.postMessage({command: 'start',
+                            inputs: dataset_inputs,
+                            outputs: dataset_outputs})
+      } else {
+        training = false;
+        this.textContent = 'start training \u203A';
+        worker.terminate();
+      }
     },
   });
-
-  worker.onmessage = event => {
-    const data = event.data;
-    if (data.command == 'update') {
-      const oldImageData = targetCanvas.getImageData();
-      const img = new Uint8ClampedArray(data.image);
-      const newImageData = new ImageData(img, oldImageData.width, oldImageData.height);
-      targetCanvas.putImageData(newImageData);
-    }
-  };
 
   const root = document.querySelector('#root');
   if (root) {

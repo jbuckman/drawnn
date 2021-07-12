@@ -5,12 +5,12 @@ export class BasicBrush {
   constructor(context) {
     this.context = context;
     this.compositeOperation = 'source-over';
-    this.brushColor = DEFAULT_BRUSH_COLOR;
+    this.color = DEFAULT_BRUSH_COLOR;
     this.updateBrushSize(DEFAULT_BRUSH_SIZE);
   }
 
-  updateBrushColor(brushColor) {
-    this.brushColor = brushColor;
+  updateColor(brushColor) {
+    this.color = brushColor;
   }
 
   updateBrushSize(brushSize) {
@@ -29,7 +29,7 @@ export class BasicBrush {
     this.prevY = y;
     this.context.save();
     this.context.globalCompositeOperation = this.compositeOperation;
-    this.context.fillStyle = this.brushColor;
+    this.context.fillStyle = this.color;
     this.context.fillRect(
       x - this.dx,
       y - this.dy,
@@ -56,10 +56,10 @@ export class Eraser extends BasicBrush {
   constructor(context) {
     super(context);
     this.compositeOperation = 'destination-out';
-    this.brushColor = 'rgba(0,0,0,1)';
+    this.color = 'rgba(0,0,0,1)';
   }
 
-  updateBrushColor(brushColor) {
+  updateColor(color) {
     // the eraser brush color should not change
     return;
   }

@@ -9,12 +9,12 @@ function createModel() {
     const model = tf.sequential();
 
     // Add a single input layer
-    model.add(tf.layers.dense({inputDim: 2, units: 64, useBias: true, activation: 'relu'}));
+    model.add(tf.layers.dense({inputDim: 2, units: 32, useBias: true, activation: 'relu'}));
 
     // hidden layer
     model.add(tf.layers.dense({units: 64, useBias: true, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 64, useBias: true, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 64, useBias: true, activation: 'relu'}));
+    model.add(tf.layers.dense({units: 128, useBias: true, activation: 'relu'}));
+    model.add(tf.layers.dense({units: 128, useBias: true, activation: 'relu'}));
     // // Add an output layer
     model.add(tf.layers.dense({units: 3, useBias: true}));
     self.model = model;
@@ -52,24 +52,32 @@ model.compile({
     loss: tf.losses.meanSquaredError,
 });
 
+
 self.onmessage = async event => {
-  const data = event.data;
-  if (data.command == 'start'){
-    const inputs = data.inputs;
-    const outputs = data.outputs;
-    var loss;
+    const inputs = event.data.inputs;
+    const outputs = event.data.outputs;
+    var steps = 0;
     var last_update = Date.now();
-    while (true) {
-        loss = await step(model, inputs, outputs, 32);
-        if (Date.now() - last_update > 1000) {
-            console.log(loss);
-            const imgarray = await renderFromModel(model, 32);
-            self.postMessage({
-                command: 'update',
-                image: imgarray
-            });
-            last_update = Date.now();
-        }
-    }
-  }
+
+    var onBatchEnd = async function(batch, logs) {
+        steps++;
+    };
+
+    var onYield = async function(epoch, batch, logs) {
+        console.log(steps, logs.loss);
+        const imgarray = await renderFromModel(model, 32);
+        self.postMessage({
+            command: 'update',
+            image: imgarray
+        });
+        last_update = Date.now();
+    };
+
+    model.fit(tf.tensor2d(inputs), tf.tensor2d(outputs), {
+       epochs: 10000,
+       batchSize: 32,
+       yieldEvery: 1000,
+       shuffle: true,
+       callbacks: {onYield, onBatchEnd}
+     });
 };
