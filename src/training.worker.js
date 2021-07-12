@@ -41,7 +41,7 @@ async function renderFromModel(model, shape) {
 export const model = createModel();
 
 model.compile({
-    optimizer: tf.train.adam(.0005),
+    optimizer: tf.train.adam(.005),
     loss: tf.losses.meanSquaredError,
 });
 
@@ -68,8 +68,8 @@ self.onmessage = async event => {
 
     model.fit(tf.tensor2d(inputs), tf.tensor2d(outputs), {
        epochs: 10000,
-       batchSize: 32,
-       yieldEvery: 1000,
+       batchSize: 512,
+       yieldEvery: 200,
        shuffle: true,
        callbacks: {onYield, onBatchEnd}
      });
