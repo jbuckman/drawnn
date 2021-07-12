@@ -21,13 +21,6 @@ function createModel() {
     return model;
 }
 
-async function step(model, inputs, outputs, batch_size) {
-    const batch_idx = Array.from({length: batch_size}, () => Math.floor(Math.random() * inputs.length));
-    const batch_inputs = batch_idx.map(idx => inputs[idx]);
-    const batch_outputs = batch_idx.map(idx => outputs[idx]);
-    return await model.trainOnBatch(tf.tensor2d(batch_inputs), tf.tensor2d(batch_outputs));
-}
-
 async function renderFromModel(model, shape) {
     var inputs = [];
     for (var y=0; y<shape; y++) {
