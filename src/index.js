@@ -3,6 +3,9 @@ import './index.css';
 
 import CanvasContainer from './canvas';
 import Menu from './menu';
+import MyWorker from "worker-loader!./training.worker.js";
+
+const worker = new MyWorker();
 
 document.addEventListener('DOMContentLoaded', function () {
   init();
@@ -70,7 +73,8 @@ function init() {
     textContent: 'start training \u203A',
     onClick() {
       const imageData = sourceCanvas.getImageData();
-      var dataset = [];
+      var dataset_inputs = [];
+      var dataset_outputs = [];
       for (var x=0; x<imageData.width; x++) {
       for (var y=0; y<imageData.height; y++) {
           var input = [x,y];
@@ -79,12 +83,24 @@ function init() {
                     imageData.data[array_loc + 1],
                     imageData.data[array_loc + 2]];
           var in_dataset = imageData.data[array_loc + 3];
-          if (in_dataset != 0) dataset.push([input, output]);
+          if (in_dataset != 0) {
+            dataset_inputs.push(input);
+            dataset_outputs.push(output);
+          }
       }}
       // targetCanvas.putImageData(imageData);
-      console.log(dataset);
+      // console.log(dataset);
+      worker.postMessage({command: 'start',
+                          inputs: dataset_inputs,
+                          outputs: dataset_outputs})
     },
   });
+
+  worker.onmessage = event => {
+    const data = event.data;
+    console.log('got this data', data);
+    if (data.command == 'update') {targetCanvas.putImageData(data.image);}
+  };
 
   const root = document.querySelector('#root');
   if (root) {

@@ -31,5 +31,8 @@
     "webpack-cli": "^4.6.0",
     "webpack-dev-server": "^3.11.2"
   },
-  "homepage": "https://github.com/liamondrop/drawnn#readme"
+  "homepage": "https://github.com/liamondrop/drawnn#readme",
+  "dependencies": {
+    "worker-loader": "^3.0.8"
+  }
 }

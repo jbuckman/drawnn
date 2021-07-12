@@ -170,7 +170,7 @@ export default class CanvasContainer {
       handleCanvasMouseUp: initBrushEventHandlers
         ? this.brushStrokeEnd.bind(this)
         : null,
-    });
+    }); fg.clear();
 
     let container = document.createElement('div');
     container.className = 'canvas-container';
