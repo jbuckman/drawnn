@@ -77,29 +77,32 @@ function init() {
       var dataset_outputs = [];
       for (var x=0; x<imageData.width; x++) {
       for (var y=0; y<imageData.height; y++) {
-          var input = [x,y];
+          var input = [x/imageData.width,y/imageData.height];
           var array_loc = (y * imageData.width + x) * 4;
-          var output = [imageData.data[array_loc + 0],
-                    imageData.data[array_loc + 1],
-                    imageData.data[array_loc + 2]];
+          var output = [imageData.data[array_loc + 0]/255,
+                        imageData.data[array_loc + 1]/255,
+                        imageData.data[array_loc + 2]/255];
           var in_dataset = imageData.data[array_loc + 3];
           if (in_dataset != 0) {
             dataset_inputs.push(input);
             dataset_outputs.push(output);
           }
       }}
-      // targetCanvas.putImageData(imageData);
-      // console.log(dataset);
+      // console.log(imageData);
       worker.postMessage({command: 'start',
-                          inputs: dataset_inputs,
-                          outputs: dataset_outputs})
+                         inputs: dataset_inputs,
+                         outputs: dataset_outputs})
     },
   });
 
   worker.onmessage = event => {
     const data = event.data;
-    console.log('got this data', data);
-    if (data.command == 'update') {targetCanvas.putImageData(data.image);}
+    if (data.command == 'update') {
+      const oldImageData = targetCanvas.getImageData();
+      const img = new Uint8ClampedArray(data.image);
+      const newImageData = new ImageData(img, oldImageData.width, oldImageData.height);
+      targetCanvas.putImageData(newImageData);
+    }
   };
 
   const root = document.querySelector('#root');

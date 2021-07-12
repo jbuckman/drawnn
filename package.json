@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/liamondrop/drawnn#readme",
   "dependencies": {
+    "@tensorflow/tfjs": "^3.7.0",
     "worker-loader": "^3.0.8"
   }
 }
