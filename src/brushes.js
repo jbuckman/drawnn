@@ -59,7 +59,7 @@ export class Eraser extends BasicBrush {
     this.brushColor = 'rgba(0,0,0,1)';
   }
 
-  updateBrushColor(brushColor) {
+  updateBrushColor() {
     // the eraser brush color should not change
     return;
   }

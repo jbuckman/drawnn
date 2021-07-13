@@ -7,7 +7,7 @@ function ColorPicker(name, props = {}) {
   };
   const {defaultValue, onChange} = Object.assign(defaultProps, props);
 
-  let el = document.createElement('input');
+  const el = document.createElement('input');
   el.type = 'color';
   el.className = 'input-control input-control-color';
   el.id = `color-${name}`;
@@ -29,10 +29,10 @@ function BrushPicker(props = {}) {
   };
   const {defaultValue, onChange, options} = Object.assign(defaultProps, props);
 
-  let el = document.createElement('select');
+  const el = document.createElement('select');
   el.className = 'select-control';
   options.forEach(value => {
-    let option = document.createElement('option');
+    const option = document.createElement('option');
     option.value = value;
     option.textContent = value;
     el.appendChild(option);
@@ -54,7 +54,7 @@ function Button(props = {}) {
   };
   const {textContent, onClick} = Object.assign(defaultProps, props);
 
-  let el = document.createElement('button');
+  const el = document.createElement('button');
   el.className = 'btn btn-outline';
   el.textContent = textContent;
   el.alt = textContent;
@@ -69,7 +69,7 @@ function MenuList(props = {}) {
     menuItems: [],
   };
   const {menuItems} = Object.assign(defaultProps, props);
-  let el = document.createDocumentFragment();
+  const el = document.createDocumentFragment();
 
   menuItems.forEach(item => {
     el.appendChild(item.el);

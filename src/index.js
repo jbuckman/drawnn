@@ -4,7 +4,7 @@ import './index.css';
 import CanvasContainer from './canvas';
 import Menu from './menu';
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   init();
 });
 
@@ -104,7 +104,7 @@ function Button(props = {}) {
   };
   const {className, textContent, onClick} = Object.assign(defaultProps, props);
 
-  let el = document.createElement('button');
+  const el = document.createElement('button');
   el.className = `btn btn-outline${className ? ' ' + className : ''}`;
   el.textContent = textContent;
   el.alt = textContent;

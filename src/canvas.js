@@ -1,8 +1,6 @@
 import {BasicBrush, Eraser} from './brushes';
 import './canvas.css';
 
-const CLEAR_COLOR = 'rgba(0,0,0,1)';
-
 function BackgroundCanvas(props) {
   // patterned background canvas
   const patternCanvas = document.createElement('canvas');
@@ -10,7 +8,6 @@ function BackgroundCanvas(props) {
   const halfSize = props.patternSize / 2;
   patternCanvas.width = props.patternSize;
   patternCanvas.height = props.patternSize;
-  patternCtx.clearRect(0, 0, patternCanvas.width, patternCanvas.height);
   patternCtx.fillStyle = props.patternColor;
   patternCtx.fillRect(0, 0, halfSize, halfSize);
   patternCtx.fillRect(halfSize, halfSize, halfSize, halfSize);
@@ -21,7 +18,6 @@ function BackgroundCanvas(props) {
   canvas.className = 'canvas-back';
   canvas.width = props.width;
   canvas.height = props.height;
-  context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = pattern;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
@@ -44,7 +40,7 @@ function ForegroundCanvas(props) {
     props.handleCanvasMouseMove(x, y);
   }
 
-  function onCanvasMouseOut(event) {
+  function onCanvasMouseOut() {
     props.handleCanvasMouseUp();
     canvas.removeEventListener('mouseout', onCanvasMouseOut, false);
     canvas.addEventListener('mouseover', onCanvasMouseOver, false);
@@ -111,8 +107,8 @@ const defaultProps = {
   paperColor: 'rgba(0,0,0,0)',
   patternSize: 20,
   patternColor: 'rgba(0,0,0,0.1)',
-  handleCanvasMouseDown(x, y) {},
-  handleCanvasMouseMove(x, y) {},
+  handleCanvasMouseDown() {},
+  handleCanvasMouseMove() {},
   handleCanvasMouseUp() {},
 };
 
@@ -172,7 +168,7 @@ export default class CanvasContainer {
         : null,
     });
 
-    let container = document.createElement('div');
+    const container = document.createElement('div');
     container.className = 'canvas-container';
     container.style.height = `${this.canvasHeight}px`;
     container.style.width = `${this.canvasWidth}px`;
