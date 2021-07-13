@@ -67,7 +67,7 @@ self.onmessage = async event => {
     };
 
     model.fit(tf.tensor2d(inputs), tf.tensor2d(outputs), {
-       epochs: 10000,
+       epochs: 100000000000000000000,
        batchSize: 512,
        yieldEvery: 200,
        shuffle: true,
