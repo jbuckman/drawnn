@@ -16,11 +16,14 @@ function init() {
   const defaultBrushSize = 1;
   const defaultColor = '#000000';
   const defaultBrushType = 'paint';
-  const canvasScale = 0.1;
-  const canvasWidth = 320;
-  const canvasHeight = 320;
-  const patternWidth = 20;
-  const patternHeight = 20;
+  const canvasResolution = 32;
+  const canvasSize = 320;
+  const canvasWidth = canvasSize;
+  const canvasHeight = canvasSize;
+  const patternSize = 5;
+  const patternWidth = patternSize;
+  const patternHeight = patternSize;
+  const canvasScale = canvasResolution/canvasSize;
 
   const sourceCanvas = new CanvasContainer({
     color: defaultColor,
@@ -72,11 +75,11 @@ function init() {
         var dataset_outputs = [];
         for (var x=0; x<imageData.width; x++) {
         for (var y=0; y<imageData.height; y++) {
-            var input = [x/imageData.width,y/imageData.height];
+            var input = [x,y];
             var array_loc = (y * imageData.width + x) * 4;
-            var output = [imageData.data[array_loc + 0]/255,
-                          imageData.data[array_loc + 1]/255,
-                          imageData.data[array_loc + 2]/255];
+            var output = [imageData.data[array_loc + 0],
+                          imageData.data[array_loc + 1],
+                          imageData.data[array_loc + 2]];
             var in_dataset = imageData.data[array_loc + 3];
             if (in_dataset != 0) {
               dataset_inputs.push(input);
@@ -96,6 +99,8 @@ function init() {
           }
         };
         worker.postMessage({command: 'start',
+                            width: imageData.width,
+                            height: imageData.height,
                             inputs: dataset_inputs,
                             outputs: dataset_outputs})
       } else {
@@ -135,10 +140,10 @@ function init() {
   image.src = URL.createObjectURL(file);
   await new Promise(x => image.onload = x);
   const workCanvas = document.createElement('canvas');
-  workCanvas.width = 32;
-  workCanvas.height = 32;
+  workCanvas.width = canvasResolution;
+  workCanvas.height = canvasResolution;
   const ctx = workCanvas.getContext('2d');
-  ctx.drawImage(image, 0, 0, 32, 32);
+  ctx.drawImage(image, 0, 0, canvasResolution, canvasResolution);
   const imageData = ctx.getImageData(0, 0, image.width, image.height);
   sourceCanvas.putImageData(imageData)
 });

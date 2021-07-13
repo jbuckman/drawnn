@@ -47,8 +47,9 @@ model.compile({
 
 
 self.onmessage = async event => {
-    const inputs = event.data.inputs;
-    const outputs = event.data.outputs;
+    const inputs = event.data.inputs.map(x => [x[0]/event.data.width, x[1]/event.data.height]);
+    const outputs = event.data.outputs.map(c => [c[0]/255., c[1]/255., c[2]/255.]);
+    console.log(event.data.inputs[0], inputs[0], event.data.outputs[0], outputs[0]);
     var steps = 0;
     var last_update = Date.now();
 
@@ -65,6 +66,7 @@ self.onmessage = async event => {
         });
         last_update = Date.now();
     };
+
 
     model.fit(tf.tensor2d(inputs), tf.tensor2d(outputs), {
        epochs: 100000000000000000000,
