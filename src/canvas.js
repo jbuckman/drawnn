@@ -98,6 +98,18 @@ function ForegroundCanvas(props) {
       context.clearRect(0, 0, canvas.width, canvas.height);
       context.restore();
     },
+    clear10() {
+      console.debug('ForegroundCanvas.clear10');
+      context.save();
+      for (let x = 0; x < canvas.width; x++) {
+        for (let y = 0; y < canvas.height; y++) {
+           if (Math.random() < 0.1)
+             context.clearRect(x,y,1,1);
+        }
+      }
+      context.restore();
+    },
+
   };
 }
 
@@ -218,6 +230,10 @@ export default class CanvasContainer {
 
   clearForeground() {
     this.foregroundCanvas.clear();
+  }
+
+  clear10Foreground() {
+    this.foregroundCanvas.clear10();
   }
 
   getImageData() {

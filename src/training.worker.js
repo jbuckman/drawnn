@@ -4,10 +4,18 @@ function clamp(num, min, max) {
   return Math.min(Math.max(num, min), max);
 };
 
+function ith_fourier(n,i) {
+    return Math.sin((2**i) * 2*Math.PI*n)
+}
+
 function datarep(shape) {
-    return coord => [coord[0]/shape,coord[1]/shape,
-        Math.sin(4*2*Math.PI*coord[0]/shape), Math.sin(8*2*Math.PI*coord[0]/shape), Math.sin(16*2*Math.PI*coord[0]/shape),
-        Math.sin(4*2*Math.PI*coord[1]/shape), Math.sin(8*2*Math.PI*coord[1]/shape), Math.sin(16*2*Math.PI*coord[1]/shape)];
+    return function(coord) {
+        const x = coord[0]/shape;
+        const y = coord[1]/shape;
+        return [
+        x,ith_fourier(x,1),ith_fourier(x,2),ith_fourier(x,3),ith_fourier(x,4),ith_fourier(x,5),ith_fourier(x,6),
+        y,ith_fourier(y,1),ith_fourier(y,2),ith_fourier(y,3),ith_fourier(y,4),ith_fourier(y,5),ith_fourier(y,6),
+        ]};
 }
 
 function createModel() {
@@ -15,7 +23,7 @@ function createModel() {
     const model = tf.sequential();
 
     // Add a single input layer
-    model.add(tf.layers.dense({inputDim: 8, units: 32, useBias: true, activation: 'relu'}));
+    model.add(tf.layers.dense({inputDim: 14, units: 32, useBias: true, activation: 'relu'}));
 
     // hidden layer
     model.add(tf.layers.dense({units: 64, useBias: true, activation: 'relu'}));

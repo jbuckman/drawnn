@@ -63,6 +63,9 @@ function init() {
     onClearButtonClick() {
       sourceCanvas.clearForeground();
     },
+    onClear10ButtonClick() {
+      sourceCanvas.clear10Foreground()
+    },
   });
 
   const dataButton = Button({

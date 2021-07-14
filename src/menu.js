@@ -86,6 +86,7 @@ export default function Menu(props = {}) {
     onColorChange() {},
     onClearButtonClick() {},
     onFillButtonClick() {},
+    onClear10ButtonClick() {},
   };
   const {
     defaultBrush,
@@ -94,6 +95,7 @@ export default function Menu(props = {}) {
     onColorChange,
     onFillButtonClick,
     onClearButtonClick,
+    onClear10ButtonClick,
   } = Object.assign(defaultProps, props);
 
   const colorPicker = ColorPicker('brush', {
@@ -112,12 +114,17 @@ export default function Menu(props = {}) {
     textContent: 'clear',
     onClick: onClearButtonClick,
   });
+  const clear10Button = Button({
+    textContent: 'fuzz',
+    onClick: onClear10ButtonClick,
+  });
   const menuList = MenuList({
     menuItems: [
       brushPicker,
       colorPicker,
       fillButton,
       clearButton,
+      clear10Button,
     ],
   });
 
