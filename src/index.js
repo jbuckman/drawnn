@@ -101,6 +101,7 @@ function init() {
         worker.postMessage({command: 'start',
                             width: imageData.width,
                             height: imageData.height,
+                            res: canvasResolution,
                             inputs: dataset_inputs,
                             outputs: dataset_outputs})
       } else {

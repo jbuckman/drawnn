@@ -9,7 +9,7 @@ function createModel() {
     const model = tf.sequential();
 
     // Add a single input layer
-    model.add(tf.layers.dense({inputDim: 2, units: 32, useBias: true, activation: 'relu'}));
+    model.add(tf.layers.dense({inputDim: 8, units: 32, useBias: true, activation: 'relu'}));
 
     // hidden layer
     model.add(tf.layers.dense({units: 64, useBias: true, activation: 'relu'}));
@@ -25,7 +25,9 @@ async function renderFromModel(model, shape) {
     var inputs = [];
     for (var y=0; y<shape; y++) {
     for (var x=0; x<shape; x++) {
-        inputs.push([x/shape,y/shape])
+        inputs.push([x/shape,y/shape,
+        Math.sin(4*2*Math.PI*x/shape), Math.sin(8*2*Math.PI*x/shape), Math.sin(16*Math.PI*x/shape),
+        Math.sin(4*2*Math.PI*y/shape), Math.sin(8*2*Math.PI*y/shape), Math.sin(16*Math.PI*y/shape)]);
     }}
     const outputs = await (await model.predictOnBatch(tf.tensor2d(inputs))).array();
     var imgarray = [];
@@ -47,7 +49,9 @@ model.compile({
 
 
 self.onmessage = async event => {
-    const inputs = event.data.inputs.map(x => [x[0]/event.data.width, x[1]/event.data.height]);
+    const inputs = event.data.inputs.map(x => [x[0]/event.data.width, x[1]/event.data.height,
+        Math.sin(4*2*Math.PI*x[0]/event.data.width), Math.sin(8*2*Math.PI*x[0]/event.data.width), Math.sin(16*2*Math.PI*x[0]/event.data.width),
+        Math.sin(4*2*Math.PI*x[1]/event.data.width), Math.sin(8*2*Math.PI*x[1]/event.data.width), Math.sin(16*2*Math.PI*x[1]/event.data.width)]);
     const outputs = event.data.outputs.map(c => [c[0]/255., c[1]/255., c[2]/255.]);
     console.log(event.data.inputs[0], inputs[0], event.data.outputs[0], outputs[0]);
     var steps = 0;
@@ -59,7 +63,7 @@ self.onmessage = async event => {
 
     var onYield = async function(epoch, batch, logs) {
         console.log(steps, logs.loss);
-        const imgarray = await renderFromModel(model, 32);
+        const imgarray = await renderFromModel(model, event.data.res);
         self.postMessage({
             command: 'update',
             image: imgarray
@@ -71,7 +75,7 @@ self.onmessage = async event => {
     model.fit(tf.tensor2d(inputs), tf.tensor2d(outputs), {
        epochs: 100000000000000000000,
        batchSize: 512,
-       yieldEvery: 200,
+       yieldEvery: 2000,
        shuffle: true,
        callbacks: {onYield, onBatchEnd}
      });
