@@ -28,7 +28,7 @@ function ForegroundCanvas(props) {
   function onCanvasMouseDown(event) {
     const x = event.offsetX;
     const y = event.offsetY;
-    props.handleCanvasMouseDown(x, y);
+    props.handleCanvasMouseDown(x, y, event.shiftKey);
     canvas.addEventListener('mousemove', onCanvasMouseMove, false);
     canvas.addEventListener('mouseout', onCanvasMouseOut, false);
     window.addEventListener('mouseup', onCanvasMouseUp, false);
@@ -49,7 +49,7 @@ function ForegroundCanvas(props) {
   function onCanvasMouseOver(event) {
     const x = event.offsetX;
     const y = event.offsetY;
-    props.handleCanvasMouseDown(x, y);
+    props.handleCanvasMouseDown(x, y, false);
     canvas.removeEventListener('mouseover', onCanvasMouseOver, false);
     canvas.addEventListener('mouseout', onCanvasMouseOut, false);
   }
@@ -246,10 +246,10 @@ export default class CanvasContainer {
     return Math.ceil(yValue * yRatio * this.canvasScale);
   }
 
-  brushStrokeStart(x, y) {
+  brushStrokeStart(x, y, shiftKey) {
     const canvasX = this.computeCanvasX(x);
     const canvasY = this.computeCanvasY(y);
-    this.brush.strokeStart(canvasX, canvasY);
+    this.brush.strokeStart(canvasX, canvasY, shiftKey);
   }
 
   brushStrokeMove(x, y) {
