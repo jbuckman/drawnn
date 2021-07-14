@@ -16,7 +16,7 @@ function init() {
   const defaultBrushSize = 1;
   const defaultColor = '#000000';
   const defaultBrushType = 'paint';
-  const canvasResolution = 32;
+  const canvasResolution = 128;
   const canvasSize = 320;
   const canvasWidth = canvasSize;
   const canvasHeight = canvasSize;

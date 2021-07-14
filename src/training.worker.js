@@ -26,8 +26,8 @@ async function renderFromModel(model, shape) {
     for (var y=0; y<shape; y++) {
     for (var x=0; x<shape; x++) {
         inputs.push([x/shape,y/shape,
-        Math.sin(4*2*Math.PI*x/shape), Math.sin(8*2*Math.PI*x/shape), Math.sin(16*Math.PI*x/shape),
-        Math.sin(4*2*Math.PI*y/shape), Math.sin(8*2*Math.PI*y/shape), Math.sin(16*Math.PI*y/shape)]);
+        Math.sin(4*2*Math.PI*x/shape), Math.sin(8*2*Math.PI*x/shape), Math.sin(16*2*Math.PI*x/shape),
+        Math.sin(4*2*Math.PI*y/shape), Math.sin(8*2*Math.PI*y/shape), Math.sin(16*2*Math.PI*y/shape)]);
     }}
     const outputs = await (await model.predictOnBatch(tf.tensor2d(inputs))).array();
     var imgarray = [];
