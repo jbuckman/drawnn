@@ -4,6 +4,12 @@ function clamp(num, min, max) {
   return Math.min(Math.max(num, min), max);
 };
 
+function datarep(shape) {
+    return coord => [coord[0]/shape,coord[1]/shape,
+        Math.sin(4*2*Math.PI*coord[0]/shape), Math.sin(8*2*Math.PI*coord[0]/shape), Math.sin(16*2*Math.PI*coord[0]/shape),
+        Math.sin(4*2*Math.PI*coord[1]/shape), Math.sin(8*2*Math.PI*coord[1]/shape), Math.sin(16*2*Math.PI*coord[1]/shape)];
+}
+
 function createModel() {
     // Create a sequential model
     const model = tf.sequential();
@@ -25,9 +31,7 @@ async function renderFromModel(model, shape) {
     var inputs = [];
     for (var y=0; y<shape; y++) {
     for (var x=0; x<shape; x++) {
-        inputs.push([x/shape,y/shape,
-        Math.sin(4*2*Math.PI*x/shape), Math.sin(8*2*Math.PI*x/shape), Math.sin(16*2*Math.PI*x/shape),
-        Math.sin(4*2*Math.PI*y/shape), Math.sin(8*2*Math.PI*y/shape), Math.sin(16*2*Math.PI*y/shape)]);
+        inputs.push(datarep(shape)([x,y]));
     }}
     const outputs = await (await model.predictOnBatch(tf.tensor2d(inputs))).array();
     var imgarray = [];
@@ -49,9 +53,7 @@ model.compile({
 
 
 self.onmessage = async event => {
-    const inputs = event.data.inputs.map(x => [x[0]/event.data.width, x[1]/event.data.height,
-        Math.sin(4*2*Math.PI*x[0]/event.data.width), Math.sin(8*2*Math.PI*x[0]/event.data.width), Math.sin(16*2*Math.PI*x[0]/event.data.width),
-        Math.sin(4*2*Math.PI*x[1]/event.data.width), Math.sin(8*2*Math.PI*x[1]/event.data.width), Math.sin(16*2*Math.PI*x[1]/event.data.width)]);
+    const inputs = event.data.inputs.map(datarep(event.data.width));
     const outputs = event.data.outputs.map(c => [c[0]/255., c[1]/255., c[2]/255.]);
     console.log(event.data.inputs[0], inputs[0], event.data.outputs[0], outputs[0]);
     var steps = 0;
