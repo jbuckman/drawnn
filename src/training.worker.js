@@ -108,7 +108,7 @@ self.onmessage = async event => {
 
     var onYield = async function(epoch, batch, logs) {
         console.log('log:', steps, logs.loss);
-        console.log('train steps/sec:', 1000*(steps-last_steps)/(Date.now()-last_update));
+        console.log('train steps/sec:', 1000*(steps-last_steps)/(Date.now()-last_update), 'train ms/render:', (Date.now()-last_update));
         console.time('render');
         const imgarray = await renderFromModel(model, event.data.res);
         console.timeEnd('render');

@@ -24,8 +24,7 @@ function init() {
   const patternWidth = patternSize;
   const patternHeight = patternSize;
   const canvasScale = canvasResolution/canvasSize;
-  const renderRate = 1000;
-  const interpolationFPS = 60;
+  const renderRate = 5000;
   var interpoStart;
   var interpoEnd;
   var interpoTimeStart;
@@ -50,7 +49,6 @@ function init() {
     patternHeight,
   });
   targetCanvas.initDOMElements(false);
-  targetCanvas.fillForeground();
 
   const menu = Menu({
     defaultColor,
@@ -83,7 +81,7 @@ function init() {
       workCanvas.width = canvasResolution;
       workCanvas.height = canvasResolution;
       workCanvas.getContext('2d').putImageData(interpoEnd, 0, 0);
-      targetCanvas.foregroundCanvas.context.globalAlpha = (Date.now() - interpoTimeStart)/(renderRate*1.5);
+      targetCanvas.foregroundCanvas.context.globalAlpha = (Date.now() - interpoTimeStart)/(renderRate*1.1);
       targetCanvas.foregroundCanvas.context.drawImage(workCanvas, 0, 0, canvasResolution, canvasResolution);
       targetCanvas.foregroundCanvas.context.globalAlpha = 1.;
   }
@@ -96,6 +94,7 @@ function init() {
     textContent: 'start training \u203A',
     onClick() {
       if (!training) {
+        targetCanvas.clearForeground();
         const imageData = sourceCanvas.getImageData();
         var dataset_inputs = [];
         var dataset_outputs = [];
