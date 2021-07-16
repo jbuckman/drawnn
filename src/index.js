@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function init() {
-  const defaultBrushSize = 1;
+  const defaultBrushSize = 10;
   const defaultColor = '#000000';
   const defaultBrushType = 'paint';
   const canvasResolution = 128;
@@ -24,6 +24,11 @@ function init() {
   const patternWidth = patternSize;
   const patternHeight = patternSize;
   const canvasScale = canvasResolution/canvasSize;
+  const renderRate = 1000;
+  const interpolationFPS = 60;
+  var interpoStart;
+  var interpoEnd;
+  var interpoTimeStart;
 
   const sourceCanvas = new CanvasContainer({
     color: defaultColor,
@@ -45,7 +50,7 @@ function init() {
     patternHeight,
   });
   targetCanvas.initDOMElements(false);
-  targetCanvas.clearForeground();
+  targetCanvas.fillForeground();
 
   const menu = Menu({
     defaultColor,
@@ -67,6 +72,24 @@ function init() {
       sourceCanvas.clear10Foreground()
     },
   });
+
+  function redraw() {
+    draw();
+    requestAnimationFrame(redraw)
+  }
+  function draw() {
+      targetCanvas.putImageData(interpoStart);
+      const workCanvas = document.createElement('canvas');
+      workCanvas.width = canvasResolution;
+      workCanvas.height = canvasResolution;
+      workCanvas.getContext('2d').putImageData(interpoEnd, 0, 0);
+      targetCanvas.foregroundCanvas.context.globalAlpha = (Date.now() - interpoTimeStart)/(renderRate*1.5);
+      targetCanvas.foregroundCanvas.context.drawImage(workCanvas, 0, 0, canvasResolution, canvasResolution);
+      targetCanvas.foregroundCanvas.context.globalAlpha = 1.;
+  }
+  interpoStart = interpoEnd = targetCanvas.getImageData();
+  interpoTimeStart = Date.now();
+  redraw();
 
   const dataButton = Button({
     className: 'data-button',
@@ -95,16 +118,16 @@ function init() {
         worker.onmessage = event => {
           const data = event.data;
           if (data.command == 'update') {
-            const oldImageData = targetCanvas.getImageData();
-            const img = new Uint8ClampedArray(data.image);
-            const newImageData = new ImageData(img, oldImageData.width, oldImageData.height);
-            targetCanvas.putImageData(newImageData);
+            interpoStart = targetCanvas.getImageData();
+            interpoEnd = new ImageData(new Uint8ClampedArray(data.image), canvasResolution, canvasResolution);
+            interpoTimeStart = Date.now();
           }
         };
         worker.postMessage({command: 'start',
                             width: imageData.width,
                             height: imageData.height,
                             res: canvasResolution,
+                            renderRate: renderRate,
                             inputs: dataset_inputs,
                             outputs: dataset_outputs})
       } else {
