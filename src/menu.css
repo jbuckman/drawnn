@@ -1,36 +1,109 @@
 .canvas-menu {
-  position: relative;
   display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  width: 100%;
-}
-
-.canvas-menu {
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
 
 .canvas-menu > :not(:last-child) {
+  margin-right: 0.25rem;
+}
+
+.canvas-menu > :not(:first-child) {
+  margin-left: 0.25rem;
+}
+
+.menu-list {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.menu-list > :not(:last-child),
+.menu-list > :not(:last-child) > .btn {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-.canvas-menu > :not(:first-child) {
+.menu-list > :not(:first-child) {
   margin-left: -1px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
 
-.canvas-menu .btn {
+.menu-list > :not(:first-child) > .btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.menu-list .btn {
   position: relative;
   z-index: 2;
 }
 
-.canvas-menu > .input-control,
-.canvas-menu > .select-control {
+.menu-list > .input-control,
+.menu-list > .select-control {
   position: relative;
   flex: 1 1 auto;
   width: 1%;
   min-width: 0;
+}
+
+.menu-list > .input-control.input-control-color {
+  min-width: 2.625rem;
+}
+
+.menu-list .active {
+  background-color: #212529;
+  color: white;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-btn {
+  white-space: nowrap;
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+
+.dropdown-menu {
+  position: absolute;
+  z-index: 1000;
+  display: none;
+  min-width: 10rem;
+  padding: 0.5rem 0;
+  margin: 0;
+  font-size: 1rem;
+  color: #212529;
+  text-align: left;
+  list-style: none;
+  background-color: white;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+}
+
+.range-menu {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 1rem;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
 }

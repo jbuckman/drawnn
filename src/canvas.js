@@ -62,6 +62,16 @@ function ForegroundCanvas(props) {
     window.removeEventListener('mouseup', onCanvasMouseUp, false);
   }
 
+  function dropRandom(dropProb) {
+    for (let x = 0; x < canvas.width; ++x) {
+      for (let y = 0; y < canvas.height; ++y) {
+        if (Math.random() <= dropProb) {
+          context.clearRect(x, y, 1, 1);
+        }
+      }
+    }
+  }
+
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   canvas.className = 'canvas-fore';
@@ -88,10 +98,14 @@ function ForegroundCanvas(props) {
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.restore();
     },
-    clear() {
-      console.debug('ForegroundCanvas.clear');
+    clear(dropProb) {
       context.save();
-      context.clearRect(0, 0, canvas.width, canvas.height);
+      if (dropProb < 1.0) {
+        dropRandom(dropProb);
+      } else {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
       context.restore();
     },
   };
@@ -121,6 +135,7 @@ export default class CanvasContainer {
       canvasScale,
       canvasHeight,
       canvasWidth,
+      dropProbability,
       paperColor,
       patternColor,
       patternSize,
@@ -130,6 +145,7 @@ export default class CanvasContainer {
     this.brushSize = brushSize;
     this.brushType = brushType;
     this.canvasScale = canvasScale;
+    this.dropProbability = dropProbability;
     this.paperColor = paperColor;
     this.patternColor = patternColor;
 
@@ -192,7 +208,7 @@ export default class CanvasContainer {
         this.brush.updateBrushSize(this.brushSize);
         break;
 
-      case 'paint':
+      case 'draw':
       default:
         this.brush = new BasicBrush(this.foregroundCanvas.context);
         this.brush.updateBrushColor(this.brushColor);
@@ -215,12 +231,16 @@ export default class CanvasContainer {
     this.paperColor = paperColor;
   }
 
+  updateDropProbability(dropProb) {
+    this.dropProbability = dropProb;
+  }
+
   fillForeground() {
     this.foregroundCanvas.fill(this.paperColor);
   }
 
   clearForeground() {
-    this.foregroundCanvas.clear();
+    this.foregroundCanvas.clear(this.dropProbability);
   }
 
   getImageData() {

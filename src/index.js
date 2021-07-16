@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function init() {
   const defaultBrushSize = 1;
   const defaultBrushColor = '#000000';
+  const defaultDropProb = 1.0;
   const defaultPaperColor = '#ffffff';
   const defaultBrushType = 'paint';
   const canvasScale = 0.1;
@@ -23,6 +24,7 @@ function init() {
     brushColor: defaultBrushColor,
     brushSize: defaultBrushSize,
     paperColor: defaultPaperColor,
+    dropProbability: defaultDropProb,
     canvasScale,
     canvasWidth,
     canvasHeight,
@@ -45,23 +47,26 @@ function init() {
   const menu = Menu({
     defaultBrushColor,
     defaultPaperColor,
-    onPaperColorChange(event) {
-      const eventTarget = event.currentTarget;
-      sourceCanvas.updatePaperColor(eventTarget.value);
+    onPaperColorChange(paperColor) {
+      sourceCanvas.updatePaperColor(paperColor);
     },
-    onBrushColorChange(event) {
-      const eventTarget = event.currentTarget;
-      sourceCanvas.updateBrushColor(eventTarget.value);
+    onBrushColorChange(brushColor) {
+      sourceCanvas.updateBrushColor(brushColor);
     },
-    onBrushChange(event) {
-      const eventTarget = event.currentTarget;
-      sourceCanvas.setupBrush(eventTarget.value);
+    onBrushChange(brushType) {
+      sourceCanvas.setupBrush(brushType);
     },
-    onFillButtonClick() {
-      sourceCanvas.fillForeground();
+    onBrushSizeChange(brushSize) {
+      sourceCanvas.updateBrushSize(brushSize);
+    },
+    onDropProbabilityChange(value) {
+      sourceCanvas.updateDropProbability(value);
     },
     onClearButtonClick() {
       sourceCanvas.clearForeground();
+    },
+    onFillButtonClick() {
+      sourceCanvas.fillForeground();
     },
   });
 

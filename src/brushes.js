@@ -64,11 +64,12 @@ export class BasicBrush {
     this.context.save();
     this.context.globalCompositeOperation = this.compositeOperation;
     this.context.fillStyle = this.brushColor;
-    this.paintSquare(x, y);
 
     // draw line from previous x,y if shift key is held down
     if (shiftKey && this.prevX != null && this.prevY != null) {
       this.drawLine(this.prevX, this.prevY, x, y);
+    } else {
+      this.paintSquare(x, y);
     }
 
     this.prevX = x;
@@ -76,7 +77,7 @@ export class BasicBrush {
   }
 
   strokeMove(x, y) {
-    this.paintSquare(x, y);
+    this.drawLine(this.prevX, this.prevY, x, y);
     this.prevX = x;
     this.prevY = y;
   }
