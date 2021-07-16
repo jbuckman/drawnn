@@ -1,8 +1,6 @@
 import {BasicBrush, Eraser} from './brushes';
 import './canvas.css';
 
-const CLEAR_COLOR = 'rgba(0,0,0,1)';
-
 function BackgroundCanvas(props) {
   // patterned background canvas
   const patternCanvas = document.createElement('canvas');
@@ -10,7 +8,6 @@ function BackgroundCanvas(props) {
   const halfSize = props.patternSize / 2;
   patternCanvas.width = props.patternSize;
   patternCanvas.height = props.patternSize;
-  patternCtx.clearRect(0, 0, patternCanvas.width, patternCanvas.height);
   patternCtx.fillStyle = props.patternColor;
   patternCtx.fillRect(0, 0, halfSize, halfSize);
   patternCtx.fillRect(halfSize, halfSize, halfSize, halfSize);
@@ -21,7 +18,6 @@ function BackgroundCanvas(props) {
   canvas.className = 'canvas-back';
   canvas.width = props.width;
   canvas.height = props.height;
-  context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = pattern;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
@@ -32,7 +28,7 @@ function ForegroundCanvas(props) {
   function onCanvasMouseDown(event) {
     const x = event.offsetX;
     const y = event.offsetY;
-    props.handleCanvasMouseDown(x, y);
+    props.handleCanvasMouseDown(x, y, event.shiftKey);
     canvas.addEventListener('mousemove', onCanvasMouseMove, false);
     canvas.addEventListener('mouseout', onCanvasMouseOut, false);
     window.addEventListener('mouseup', onCanvasMouseUp, false);
@@ -44,7 +40,7 @@ function ForegroundCanvas(props) {
     props.handleCanvasMouseMove(x, y);
   }
 
-  function onCanvasMouseOut(event) {
+  function onCanvasMouseOut() {
     props.handleCanvasMouseUp();
     canvas.removeEventListener('mouseout', onCanvasMouseOut, false);
     canvas.addEventListener('mouseover', onCanvasMouseOver, false);
@@ -53,7 +49,7 @@ function ForegroundCanvas(props) {
   function onCanvasMouseOver(event) {
     const x = event.offsetX;
     const y = event.offsetY;
-    props.handleCanvasMouseDown(x, y);
+    props.handleCanvasMouseDown(x, y, false);
     canvas.removeEventListener('mouseover', onCanvasMouseOver, false);
     canvas.addEventListener('mouseout', onCanvasMouseOut, false);
   }
@@ -64,6 +60,16 @@ function ForegroundCanvas(props) {
     canvas.removeEventListener('mouseout', onCanvasMouseOut, false);
     canvas.removeEventListener('mouseover', onCanvasMouseOver, false);
     window.removeEventListener('mouseup', onCanvasMouseUp, false);
+  }
+
+  function dropRandom(dropProb) {
+    for (let x = 0; x < canvas.width; ++x) {
+      for (let y = 0; y < canvas.height; ++y) {
+        if (Math.random() <= dropProb) {
+          context.clearRect(x, y, 1, 1);
+        }
+      }
+    }
   }
 
   const canvas = document.createElement('canvas');
@@ -92,10 +98,14 @@ function ForegroundCanvas(props) {
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.restore();
     },
-    clear() {
-      console.debug('ForegroundCanvas.clear');
+    clear(dropProb) {
       context.save();
-      context.clearRect(0, 0, canvas.width, canvas.height);
+      if (dropProb < 1.0) {
+        dropRandom(dropProb);
+      } else {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
       context.restore();
     },
     clear10() {
@@ -122,8 +132,8 @@ const defaultProps = {
   canvasHeight: 320,
   patternSize: 20,
   patternColor: 'rgba(0,0,0,0.1)',
-  handleCanvasMouseDown(x, y) {},
-  handleCanvasMouseMove(x, y) {},
+  handleCanvasMouseDown() {},
+  handleCanvasMouseMove() {},
   handleCanvasMouseUp() {},
 };
 
@@ -136,6 +146,8 @@ export default class CanvasContainer {
       canvasScale,
       canvasHeight,
       canvasWidth,
+      dropProbability,
+      paperColor,
       patternColor,
       patternSize,
     } = Object.assign(defaultProps, props);
@@ -144,6 +156,8 @@ export default class CanvasContainer {
     this.brushSize = brushSize;
     this.brushType = brushType;
     this.canvasScale = canvasScale;
+    this.dropProbability = dropProbability;
+    this.paperColor = paperColor;
     this.patternColor = patternColor;
 
     this.canvasHeight = canvasHeight;
@@ -181,7 +195,7 @@ export default class CanvasContainer {
         : null,
     }); fg.clear();
 
-    let container = document.createElement('div');
+    const container = document.createElement('div');
     container.className = 'canvas-container';
     container.style.height = `${this.canvasHeight}px`;
     container.style.width = `${this.canvasWidth}px`;
@@ -205,7 +219,7 @@ export default class CanvasContainer {
         this.brush.updateBrushSize(this.brushSize);
         break;
 
-      case 'paint':
+      case 'draw':
       default:
         this.brush = new BasicBrush(this.foregroundCanvas.context);
         this.brush.updateColor(this.color);
@@ -224,12 +238,20 @@ export default class CanvasContainer {
     this.brush.updateBrushSize(brushSize);
   }
 
+  updatePaperColor(paperColor) {
+    this.paperColor = paperColor;
+  }
+
+  updateDropProbability(dropProb) {
+    this.dropProbability = dropProb;
+  }
+
   fillForeground() {
-    this.foregroundCanvas.fill(this.color);
+    this.foregroundCanvas.fill(this.paperColor);
   }
 
   clearForeground() {
-    this.foregroundCanvas.clear();
+    this.foregroundCanvas.clear(this.dropProbability);
   }
 
   clear10Foreground() {
@@ -259,10 +281,10 @@ export default class CanvasContainer {
     return Math.ceil(yValue * yRatio * this.canvasScale);
   }
 
-  brushStrokeStart(x, y) {
+  brushStrokeStart(x, y, shiftKey) {
     const canvasX = this.computeCanvasX(x);
     const canvasY = this.computeCanvasY(y);
-    this.brush.strokeStart(canvasX, canvasY);
+    this.brush.strokeStart(canvasX, canvasY, shiftKey);
   }
 
   brushStrokeMove(x, y) {

@@ -36,9 +36,6 @@ module.exports = function (_env, argv) {
         },
       ],
     },
-    devServer: {
-      contentBase: path.join(__dirname, 'public'),
-    },
     plugins: [
       new HtmlWebpackPlugin({
         template: './public/index.html',

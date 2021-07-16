@@ -7,14 +7,17 @@ import MyWorker from "worker-loader!./training.worker.js";
 
 let worker = new MyWorker();
 var training = false;
+import {Button} from './components/Button'
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   init();
 });
 
 function init() {
-  const defaultBrushSize = 10;
-  const defaultColor = '#000000';
+  const defaultBrushSize = 1;
+  const defaultBrushColor = '#000000';
+  const defaultDropProb = 1.0;
+  const defaultPaperColor = '#ffffff';
   const defaultBrushType = 'paint';
   const canvasResolution = 256;
   const canvasSize = 320;
@@ -32,8 +35,10 @@ function init() {
   var firstEverInterpo = true;
 
   const sourceCanvas = new CanvasContainer({
-    color: defaultColor,
+    brushColor: defaultBrushColor,
     brushSize: defaultBrushSize,
+    paperColor: defaultPaperColor,
+    dropProbability: defaultDropProb,
     canvasScale,
     canvasWidth,
     canvasHeight,
@@ -54,23 +59,28 @@ function init() {
   targetCanvas.clearForeground();
 
   const menu = Menu({
-    defaultColor,
-    onColorChange(event) {
-      const eventTarget = event.currentTarget;
-      sourceCanvas.updateColor(eventTarget.value);
+    defaultBrushColor,
+    defaultPaperColor,
+    onPaperColorChange(paperColor) {
+      sourceCanvas.updatePaperColor(paperColor);
     },
-    onBrushChange(event) {
-      const eventTarget = event.currentTarget;
-      sourceCanvas.setupBrush(eventTarget.value);
+    onBrushColorChange(brushColor) {
+      sourceCanvas.updateBrushColor(brushColor);
     },
-    onFillButtonClick() {
-      sourceCanvas.fillForeground();
+    onBrushChange(brushType) {
+      sourceCanvas.setupBrush(brushType);
+    },
+    onBrushSizeChange(brushSize) {
+      sourceCanvas.updateBrushSize(brushSize);
+    },
+    onDropProbabilityChange(value) {
+      sourceCanvas.updateDropProbability(value);
     },
     onClearButtonClick() {
       sourceCanvas.clearForeground();
     },
-    onClear10ButtonClick() {
-      sourceCanvas.clear10Foreground()
+    onFillButtonClick() {
+      sourceCanvas.fillForeground();
     },
   });
 
@@ -188,24 +198,6 @@ function init() {
   const imageData = ctx.getImageData(0, 0, image.width, image.height);
   sourceCanvas.putImageData(imageData)
 });
-}
-
-function Button(props = {}) {
-  const defaultProps = {
-    className: '',
-    textContent: '',
-    onClick() {},
-  };
-  const {className, textContent, onClick} = Object.assign(defaultProps, props);
-
-  let el = document.createElement('button');
-  el.className = `btn btn-outline${className ? ' ' + className : ''}`;
-  el.textContent = textContent;
-  el.alt = textContent;
-  el.title = textContent;
-  el.addEventListener('click', onClick);
-
-  return {el};
 }
 
 
