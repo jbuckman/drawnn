@@ -3,6 +3,7 @@ import './index.css';
 
 import CanvasContainer from './canvas';
 import Menu from './menu';
+import {Button} from './components/Button'
 
 document.addEventListener('DOMContentLoaded', () => {
   init();
@@ -99,22 +100,4 @@ function init() {
 
     root.appendChild(frag);
   }
-}
-
-function Button(props = {}) {
-  const defaultProps = {
-    className: '',
-    textContent: '',
-    onClick() {},
-  };
-  const {className, textContent, onClick} = Object.assign(defaultProps, props);
-
-  const el = document.createElement('button');
-  el.className = `btn btn-outline${className ? ' ' + className : ''}`;
-  el.textContent = textContent;
-  el.alt = textContent;
-  el.title = textContent;
-  el.addEventListener('click', onClick);
-
-  return {el};
 }
