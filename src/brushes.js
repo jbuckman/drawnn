@@ -12,7 +12,8 @@ export class BasicBrush {
   }
 
   updateColor(brushColor) {
-    this.color = brushColor;
+    console.log(this.brushColor, brushColor);
+    this.brushColor = brushColor;
   }
 
   updateBrushSize(brushSize) {
@@ -91,7 +92,7 @@ export class Eraser extends BasicBrush {
   constructor(context) {
     super(context);
     this.compositeOperation = 'destination-out';
-    this.color = 'rgba(0,0,0,1)';
+    this.brushColor = 'rgba(0,0,0,1)';
   }
 
   updateBrushColor() {

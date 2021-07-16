@@ -228,7 +228,7 @@ export default class CanvasContainer {
     }
   }
 
-  updateColor(color) {
+  updateBrushColor(color) {
     this.color = color;
     this.brush.updateColor(color);
   }
