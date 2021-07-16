@@ -1,11 +1,13 @@
-const DEFAULT_BRUSH_SIZE = 1;
+const DEFAULT_BRUSH_SIZE = 2;
 const DEFAULT_BRUSH_COLOR = '#000000';
 
 export class BasicBrush {
   constructor(context) {
     this.context = context;
     this.compositeOperation = 'source-over';
-    this.color = DEFAULT_BRUSH_COLOR;
+    this.brushColor = DEFAULT_BRUSH_COLOR;
+    this.prevX = null;
+    this.prevY = null;
     this.updateBrushSize(DEFAULT_BRUSH_SIZE);
   }
 
@@ -24,12 +26,32 @@ export class BasicBrush {
     this.context = null;
   }
 
-  strokeStart(x, y) {
-    this.prevX = x;
-    this.prevY = y;
-    this.context.save();
-    this.context.globalCompositeOperation = this.compositeOperation;
-    this.context.fillStyle = this.color;
+  drawLine(x0, y0, x1, y1) {
+    // line drawing using bresenham algo
+    // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#Algorithm
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = x0 < x1 ? 1 : -1;
+    const sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+      this.paintSquare(x0, y0);
+
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 > -dy) {
+        err -= dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
+  }
+
+  paintSquare(x, y) {
     this.context.fillRect(
       x - this.dx,
       y - this.dy,
@@ -38,13 +60,26 @@ export class BasicBrush {
     );
   }
 
+  strokeStart(x, y, shiftKey = false) {
+    this.context.save();
+    this.context.globalCompositeOperation = this.compositeOperation;
+    this.context.fillStyle = this.brushColor;
+
+    // draw line from previous x,y if shift key is held down
+    if (shiftKey && this.prevX != null && this.prevY != null) {
+      this.drawLine(this.prevX, this.prevY, x, y);
+    } else {
+      this.paintSquare(x, y);
+    }
+
+    this.prevX = x;
+    this.prevY = y;
+  }
+
   strokeMove(x, y) {
-    this.context.fillRect(
-      x - this.dx,
-      y - this.dy,
-      this.brushSize,
-      this.brushSize
-    );
+    this.drawLine(this.prevX, this.prevY, x, y);
+    this.prevX = x;
+    this.prevY = y;
   }
 
   strokeEnd() {
@@ -59,7 +94,7 @@ export class Eraser extends BasicBrush {
     this.color = 'rgba(0,0,0,1)';
   }
 
-  updateColor(color) {
+  updateBrushColor() {
     // the eraser brush color should not change
     return;
   }
