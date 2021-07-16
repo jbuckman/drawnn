@@ -120,6 +120,7 @@ self.onmessage = async event => {
         last_steps = steps;
     };
 
+    onYield(0,0,{loss: 9999});
 
     model.fit(tf.tensor2d(inputs), tf.tensor2d(outputs), {
        epochs: 100000000000000000000,

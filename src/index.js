@@ -16,7 +16,7 @@ function init() {
   const defaultBrushSize = 10;
   const defaultColor = '#000000';
   const defaultBrushType = 'paint';
-  const canvasResolution = 128;
+  const canvasResolution = 256;
   const canvasSize = 320;
   const canvasWidth = canvasSize;
   const canvasHeight = canvasSize;
@@ -28,6 +28,8 @@ function init() {
   var interpoStart;
   var interpoEnd;
   var interpoTimeStart;
+  var dirty = false;
+  var firstEverInterpo = true;
 
   const sourceCanvas = new CanvasContainer({
     color: defaultColor,
@@ -49,6 +51,7 @@ function init() {
     patternHeight,
   });
   targetCanvas.initDOMElements(false);
+  targetCanvas.clearForeground();
 
   const menu = Menu({
     defaultColor,
@@ -76,14 +79,17 @@ function init() {
     requestAnimationFrame(redraw)
   }
   function draw() {
-      targetCanvas.putImageData(interpoStart);
-      const workCanvas = document.createElement('canvas');
-      workCanvas.width = canvasResolution;
-      workCanvas.height = canvasResolution;
-      workCanvas.getContext('2d').putImageData(interpoEnd, 0, 0);
-      targetCanvas.foregroundCanvas.context.globalAlpha = (Date.now() - interpoTimeStart)/(renderRate*1.1);
-      targetCanvas.foregroundCanvas.context.drawImage(workCanvas, 0, 0, canvasResolution, canvasResolution);
-      targetCanvas.foregroundCanvas.context.globalAlpha = 1.;
+      if (dirty) {
+          targetCanvas.putImageData(interpoStart);
+          const workCanvas = document.createElement('canvas');
+          workCanvas.width = canvasResolution;
+          workCanvas.height = canvasResolution;
+          workCanvas.getContext('2d').putImageData(interpoEnd, 0, 0);
+          targetCanvas.foregroundCanvas.context.globalAlpha = (Date.now() - interpoTimeStart) / (renderRate * 1.1);
+          targetCanvas.foregroundCanvas.context.drawImage(workCanvas, 0, 0, canvasResolution, canvasResolution);
+          targetCanvas.foregroundCanvas.context.globalAlpha = 1.;
+          if (((Date.now() - interpoTimeStart) / (renderRate * 1.1)) >= 1.) {dirty = false;}
+      }
   }
   interpoStart = interpoEnd = targetCanvas.getImageData();
   interpoTimeStart = Date.now();
@@ -94,7 +100,6 @@ function init() {
     textContent: 'start training \u203A',
     onClick() {
       if (!training) {
-        targetCanvas.clearForeground();
         const imageData = sourceCanvas.getImageData();
         var dataset_inputs = [];
         var dataset_outputs = [];
@@ -112,14 +117,24 @@ function init() {
             }
         }}
         training = true;
-        this.textContent = 'stop training \u203A';
+        firstEverInterpo = true;
+        this.textContent = 'starting... \u203A';
         worker = new MyWorker();
         worker.onmessage = event => {
           const data = event.data;
           if (data.command == 'update') {
-            interpoStart = targetCanvas.getImageData();
-            interpoEnd = new ImageData(new Uint8ClampedArray(data.image), canvasResolution, canvasResolution);
-            interpoTimeStart = Date.now();
+            if (firstEverInterpo) {
+              interpoStart = interpoEnd = new ImageData(new Uint8ClampedArray(data.image), canvasResolution, canvasResolution);
+              targetCanvas.putImageData(interpoStart);
+              firstEverInterpo = false;
+              dirty = false;
+              this.textContent = 'stop training \u203A';
+            } else {
+              interpoStart = targetCanvas.getImageData();
+              interpoEnd = new ImageData(new Uint8ClampedArray(data.image), canvasResolution, canvasResolution);
+              interpoTimeStart = Date.now();
+              dirty = true;
+            }
           }
         };
         worker.postMessage({command: 'start',
