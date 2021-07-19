@@ -1,11 +1,8 @@
 import './menu.css';
 
-import {IconButton} from './components/Button';
+import {Button} from './components/Button';
 import {ColorPicker} from './components/ColorPicker';
-import {
-  NumberPickerThing,
-  IconNumberPickerThing,
-} from './components/NumberPicker';
+import {NumberPicker} from './components/NumberPicker';
 
 function MenuList(props = {}) {
   const defaultProps = {
@@ -48,6 +45,11 @@ export default function Menu(props = {}) {
     onClearButtonClick,
   } = Object.assign(defaultProps, props);
 
+  const Icon = variant =>
+    `<svg class="icon" fill="currentColor">
+    <use xlink:href="icons.svg#${variant}"></use>
+    </svg>`;
+
   // Menu list items for brushes (draw and erase)
   const brushColorPicker = ColorPicker('brush', {
     defaultValue: defaultBrushColor,
@@ -56,36 +58,45 @@ export default function Menu(props = {}) {
       onBrushColorChange(target.value);
     },
   });
-  const drawButton = IconButton({
+  const drawButton = Button({
     id: 'drawButton',
     title: 'Draw',
-    variant: 'draw',
+    className: 'active',
+    content: Icon('draw'),
     onClick: () => {
-      drawButton.activateButton();
-      eraseButton.deactivateButton();
+      drawButton.addClass('active');
+      eraseButton.removeClass('active');
       onBrushChange('draw');
     },
   });
-  drawButton.activateButton();
-  const eraseButton = IconButton({
+  const eraseButton = Button({
     id: 'eraseButton',
     title: 'Erase',
-    variant: 'eraser',
+    content: Icon('eraser'),
     onClick: () => {
-      drawButton.deactivateButton();
-      eraseButton.activateButton();
+      drawButton.removeClass('active');
+      eraseButton.addClass('active');
       onBrushChange('erase');
     },
   });
-  const brushSizePicker = NumberPickerThing({
+  const brushSizeToggle = Button({
+    id: 'brushSizeToggle',
+    title: 'Brush size',
+    className: 'dropdown-toggle',
+    content: '1px',
+  });
+  const brushSizePicker = NumberPicker({
     id: 'brushSizeRange',
     label: 'Brush size',
+    toggleEl: brushSizeToggle.el,
     defaultValue: 1,
     minValue: 1,
     maxValue: 32,
     units: 'px',
     onChange(event) {
-      onBrushSizeChange(event.target.value);
+      const brushSize = Number(event.target.value);
+      brushSizeToggle.el.textContent = `${brushSize}px`;
+      onBrushSizeChange(brushSize);
     },
   });
 
@@ -97,25 +108,29 @@ export default function Menu(props = {}) {
       onPaperColorChange(target.value);
     },
   });
-  const fillButton = IconButton({
+  const fillButton = Button({
     id: 'fillButton',
     title: 'Fill',
-    variant: 'color-fill',
+    content: Icon('color-fill'),
     onClick: onFillButtonClick,
   });
-  const clearButton = IconNumberPickerThing({
+  const clearButtonToggle = Button({
+    id: 'clearButtonToggle',
+    title: 'Clear',
+    content: Icon('clear'),
+    onClick: onClearButtonClick,
+  });
+  const clearButton = NumberPicker({
     id: 'clearButton',
     label: 'Clear prob',
     title: 'Clear',
-    iconVariant: 'clear',
+    toggleEl: clearButtonToggle.el,
     defaultValue: 100,
     minValue: 1,
-    maxValue: 100,
-    step: 1,
     units: '%',
-    onClick: onClearButtonClick,
     onChange(event) {
-      onDropProbabilityChange(event.target.value / 100);
+      const dropProbability = Number(event.target.value);
+      onDropProbabilityChange(dropProbability / 100);
     },
   });
 

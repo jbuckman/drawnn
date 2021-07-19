@@ -73,7 +73,7 @@ function init() {
 
   const dataButton = Button({
     className: 'data-button',
-    textContent: 'copy image data \u203A',
+    content: 'copy image data \u203A',
     onClick() {
       const imageData = sourceCanvas.getImageData();
       targetCanvas.putImageData(imageData);

@@ -1,47 +1,29 @@
 export function Button(props = {}) {
   const defaultProps = {
     className: '',
-    textContent: '',
+    content: '',
     label: '',
     onClick() {},
   };
-  const {className, label, textContent, onClick} = Object.assign(
+  const {className, label, content, onClick} = Object.assign(
     defaultProps,
     props
   );
 
   const el = document.createElement('button');
   el.className = `btn btn-outline${className ? ' ' + className : ''}`;
-  el.textContent = textContent;
+  el.innerHTML = content;
   el.alt = label;
   el.title = label;
   el.addEventListener('click', onClick);
 
-  return {el};
-}
-
-export function IconButton(props = {}) {
-  const defaultProps = {
-    variant: '',
-    title: '',
-    onClick() {},
-  };
-  const {variant, title, onClick} = Object.assign(defaultProps, props);
-
-  const el = document.createElement('button');
-  el.className = 'btn btn-outline';
-  el.alt = title;
-  el.title = title;
-  el.innerHTML = `<svg class="icon" fill="currentColor"><use xlink:href="icons.svg#${variant}"></use></svg>`;
-  el.addEventListener('click', onClick);
-
   return {
     el,
-    activateButton() {
-      el.classList.add('active');
+    addClass(className) {
+      el.classList.add(className);
     },
-    deactivateButton() {
-      el.classList.remove('active');
+    removeClass(className) {
+      el.classList.remove(className);
     },
   };
 }
