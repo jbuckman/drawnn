@@ -29,7 +29,6 @@ body {
   margin-bottom: 0.5rem;
 }
 
-
 .input-control {
   display: block;
   width: 100%;
@@ -115,6 +114,34 @@ button:not(:disabled) {
 .btn-outline {
   color: #6c757d;
   border-color: #6c757d;
+}
+
+.btn-outline:hover {
+  color: white;
+  background-color: #6c757d;
+}
+
+.btn-outline:focus {
+  box-shadow: 0 0 0 0.1rem rgba(108, 117, 125, 0.5);
+}
+
+.menu-list .active {
+  background-color: #212529;
+  color: white;
+}
+
+.btn-outline:active,
+.btn-outline.active {
+  color: white;
+  background-color: #212529;
+  border-color: #212529;
+}
+
+.btn-outline:disabled,
+.btn-outline.disabled {
+  color: rgba(108, 117, 125, 0.5);
+  border-color: rgba(108, 117, 125, 0.5);
+  background-color: transparent;
 }
 
 .data-button {

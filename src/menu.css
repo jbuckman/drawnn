@@ -52,11 +52,6 @@
   min-width: 2.625rem;
 }
 
-.menu-list .active {
-  background-color: #212529;
-  color: white;
-}
-
 .menu-list .resolution-select {
   min-width: 7rem;
 }

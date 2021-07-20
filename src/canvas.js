@@ -137,9 +137,7 @@ const defaultProps = {
   paperColor: 'rgba(0,0,0,0)',
   patternColor: 'rgba(0,0,0,0.1)',
   patternSize: 20,
-  handleCanvasMouseDown() {},
-  handleCanvasMouseMove() {},
-  handleCanvasMouseUp() {},
+  onBrushStrokeEnd() {},
 };
 
 export default class CanvasContainer {
@@ -155,6 +153,7 @@ export default class CanvasContainer {
       paperColor,
       patternColor,
       patternSize,
+      handleBrushStrokeEnd,
     } = Object.assign(defaultProps, props);
 
     this.brushColor = brushColor;
@@ -165,6 +164,7 @@ export default class CanvasContainer {
     this.paperColor = paperColor;
     this.patternColor = patternColor;
     this.patternSize = patternSize;
+    this.onBrushStrokeEnd = onBrushStrokeEnd;
 
     this.canvasHeight = canvasHeight;
     this.canvasWidth = canvasWidth;
@@ -234,7 +234,7 @@ export default class CanvasContainer {
     }
   }
 
-  updateCanvasSize(targetSize) {
+  resizeCanvas(targetSize) {
     this.canvasScale = targetSize / this.canvasHeight;
     this.canvasHeightComputed = Math.ceil(this.canvasHeight * this.canvasScale);
     this.canvasWidthComputed = Math.ceil(this.canvasWidth * this.canvasScale);
@@ -309,5 +309,6 @@ export default class CanvasContainer {
 
   brushStrokeEnd() {
     this.brush.strokeEnd();
+    if (typeof this.onBrushStrokeEnd === 'function') this.onBrushStrokeEnd();
   }
 }

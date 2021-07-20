@@ -49,7 +49,9 @@ export default function Menu(props = {}) {
     onDropProbabilityChange() {},
     onFillButtonClick() {},
     onPaperColorChange() {},
+    onRedoButtonClick() {},
     onResolutionChange() {},
+    onUndoButtonClick() {},
   };
   const {
     defaultBrushColor,
@@ -61,7 +63,9 @@ export default function Menu(props = {}) {
     onDropProbabilityChange,
     onFillButtonClick,
     onResolutionChange,
+    onRedoButtonClick,
     onPaperColorChange,
+    onUndoButtonClick,
   } = Object.assign(defaultProps, props);
 
   const Icon = variant =>
@@ -153,6 +157,21 @@ export default function Menu(props = {}) {
     },
   });
 
+  // Menu list items for canvas resolution, undo and redo
+  const resolutionSelect = ResolutionSelect({onChange: onResolutionChange});
+  const undoButton = Button({
+    id: 'undoButton',
+    title: 'Undo',
+    content: Icon('undo'),
+    onClick: onUndoButtonClick,
+  });
+  const redoButton = Button({
+    id: 'redoButton',
+    title: 'Redo',
+    content: Icon('redo'),
+    onClick: onRedoButtonClick,
+  });
+
   const menuListBrush = MenuList({
     menuItems: [brushColorPicker, drawButton, eraseButton, brushSizePicker],
   });
@@ -162,7 +181,7 @@ export default function Menu(props = {}) {
   });
 
   const menuListResolution = MenuList({
-    menuItems: [ResolutionSelect({onChange: onResolutionChange})],
+    menuItems: [resolutionSelect, undoButton, redoButton],
   });
 
   const container = document.createElement('div');
@@ -171,5 +190,18 @@ export default function Menu(props = {}) {
   container.appendChild(menuListPaint.el);
   container.appendChild(menuListResolution.el);
 
-  return {el: container};
+  return {el: container,
+    enableUndoButton() {
+      undoButton.el.disabled = false;
+    },
+    disableUndoButton() {
+      undoButton.el.disabled = true;
+    },
+    enableRedoButton() {
+      redoButton.el.disabled = false;
+    },
+    disableRedoButton() {
+      redoButton.el.disabled = true;
+    },
+  };
 }

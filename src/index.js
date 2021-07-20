@@ -3,6 +3,7 @@ import './index.css';
 
 import CanvasContainer from './canvas';
 import Menu from './menu';
+import UndoHistory, {testHistory} from './history';
 import {Button} from './components/Button';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function init() {
+  testHistory();
+
   const defaultBrushSize = 1;
   const defaultBrushColor = '#000000';
   const defaultDropProb = 1.0;
@@ -19,16 +22,39 @@ function init() {
   const canvasWidth = 320;
   const canvasHeight = 320;
   const patternSize = 20;
+  const historySize = 10;
+
+  const undoHistory = UndoHistory(historySize, {
+    onUpdate() {
+      console.debug(undoHistory.toString());
+
+      if (undoHistory.atStart) {
+        menu.disableUndoButton();
+      } else {
+        menu.enableUndoButton();
+      }
+
+      if (undoHistory.atEnd) {
+        menu.disableRedoButton();
+      } else {
+        menu.enableRedoButton();
+      }
+    },
+  });
 
   const sourceCanvas = new CanvasContainer({
     brushColor: defaultBrushColor,
     brushSize: defaultBrushSize,
     paperColor: defaultPaperColor,
     dropProbability: defaultDropProb,
+    trackHistory: true,
     canvasScale,
     canvasWidth,
     canvasHeight,
     patternSize,
+    onBrushStrokeEnd() {
+      undoHistory.push(sourceCanvas.getImageData());
+    },
   });
   sourceCanvas.initDOMElements(true);
   sourceCanvas.setupBrush(defaultBrushType);
@@ -62,15 +88,30 @@ function init() {
     },
     onClearButtonClick() {
       sourceCanvas.clearForeground();
+      undoHistory.push(sourceCanvas.getImageData());
     },
     onFillButtonClick() {
       sourceCanvas.fillForeground();
+      undoHistory.push(sourceCanvas.getImageData());
+    },
+    onUndoButtonClick() {
+      if (!undoHistory.atStart) {
+        undoHistory.undo();
+        sourceCanvas.putImageData(undoHistory.currentItem);
+      }
+    },
+    onRedoButtonClick() {
+      if (!undoHistory.atEnd) {
+        undoHistory.redo();
+        sourceCanvas.putImageData(undoHistory.currentItem);
+      }
     },
     onResolutionChange(event) {
       const targetSize = Number(event.target.value);
-      sourceCanvas.updateCanvasSize(targetSize);
+      sourceCanvas.resizeCanvas(targetSize);
       sourceCanvas.fillForeground();
-      targetCanvas.updateCanvasSize(targetSize);
+      targetCanvas.resizeCanvas(targetSize);
+      undoHistory.reset(sourceCanvas.getImageData());
     },
   });
 
@@ -103,4 +144,6 @@ function init() {
 
     root.appendChild(frag);
   }
+
+  undoHistory.reset(sourceCanvas.getImageData());
 }
