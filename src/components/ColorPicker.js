@@ -13,8 +13,5 @@ export function ColorPicker(name, props = {}) {
   el.alt = `${name} color`;
   el.title = `${name} color`;
   el.addEventListener('change', onChange);
-  return {
-    el,
-    name,
-  };
+  return {el, name};
 }

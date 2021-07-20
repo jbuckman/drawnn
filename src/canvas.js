@@ -1,27 +1,40 @@
 import {BasicBrush, Eraser} from './brushes';
 import './canvas.css';
 
+function checkerboard(context, patternSize, patternColor) {
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  const halfSize = patternSize / 2;
+  c.width = patternSize;
+  c.height = patternSize;
+  ctx.fillStyle = patternColor;
+  ctx.fillRect(0, 0, halfSize, halfSize);
+  ctx.fillRect(halfSize, halfSize, halfSize, halfSize);
+  return context.createPattern(c, 'repeat');
+}
+
 function BackgroundCanvas(props) {
   // patterned background canvas
-  const patternCanvas = document.createElement('canvas');
-  const patternCtx = patternCanvas.getContext('2d');
-  const halfSize = props.patternSize / 2;
-  patternCanvas.width = props.patternSize;
-  patternCanvas.height = props.patternSize;
-  patternCtx.fillStyle = props.patternColor;
-  patternCtx.fillRect(0, 0, halfSize, halfSize);
-  patternCtx.fillRect(halfSize, halfSize, halfSize, halfSize);
-
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-  const pattern = context.createPattern(patternCanvas, 'repeat');
+  const pattern = checkerboard(context, props.patternSize, props.patternColor);
   canvas.className = 'canvas-back';
   canvas.width = props.width;
   canvas.height = props.height;
   context.fillStyle = pattern;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
-  return {context, el: canvas};
+  return {
+    context,
+    el: canvas,
+    resize(width, height) {
+      canvas.width = width;
+      canvas.height = height;
+      context.fillStyle = pattern;
+      context.fillRect(0, 0, width, height);
+      context.save();
+    },
+  };
 }
 
 function ForegroundCanvas(props) {
@@ -78,7 +91,6 @@ function ForegroundCanvas(props) {
   canvas.width = props.width;
   canvas.height = props.height;
   context.imageSmoothingEnabled = false;
-  context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = props.fillColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
@@ -108,6 +120,10 @@ function ForegroundCanvas(props) {
 
       context.restore();
     },
+    resize(width, height) {
+      canvas.width = width;
+      canvas.height = height;
+    },
   };
 }
 
@@ -119,8 +135,8 @@ const defaultProps = {
   canvasWidth: 320,
   canvasHeight: 320,
   paperColor: 'rgba(0,0,0,0)',
-  patternSize: 20,
   patternColor: 'rgba(0,0,0,0.1)',
+  patternSize: 20,
   handleCanvasMouseDown() {},
   handleCanvasMouseMove() {},
   handleCanvasMouseUp() {},
@@ -148,12 +164,13 @@ export default class CanvasContainer {
     this.dropProbability = dropProbability;
     this.paperColor = paperColor;
     this.patternColor = patternColor;
+    this.patternSize = patternSize;
 
     this.canvasHeight = canvasHeight;
     this.canvasWidth = canvasWidth;
     this.canvasHeightComputed = Math.ceil(canvasHeight * canvasScale);
     this.canvasWidthComputed = Math.ceil(canvasWidth * canvasScale);
-    this.patternSize = Math.ceil(patternSize * canvasScale);
+    this.patternSizeComputed = Math.ceil(patternSize * canvasScale);
 
     this.el = null;
     this.brush = null;
@@ -165,7 +182,7 @@ export default class CanvasContainer {
     const bg = BackgroundCanvas({
       width: this.canvasWidthComputed,
       height: this.canvasHeightComputed,
-      patternSize: this.patternSize,
+      patternSize: this.patternSizeComputed,
       patternColor: this.patternColor,
     });
 
@@ -215,6 +232,18 @@ export default class CanvasContainer {
         this.brush.updateBrushSize(this.brushSize);
         break;
     }
+  }
+
+  updateCanvasSize(targetSize) {
+    this.canvasScale = targetSize / this.canvasHeight;
+    this.canvasHeightComputed = Math.ceil(this.canvasHeight * this.canvasScale);
+    this.canvasWidthComputed = Math.ceil(this.canvasWidth * this.canvasScale);
+    this.patternSizeComputed = Math.ceil(this.patternSize * this.canvasScale);
+
+    this.foregroundCanvas.resize(
+      this.canvasWidthComputed,
+      this.canvasHeightComputed
+    );
   }
 
   updateBrushColor(brushColor) {

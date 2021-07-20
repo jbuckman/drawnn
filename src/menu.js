@@ -19,6 +19,25 @@ function MenuList(props = {}) {
   return {el};
 }
 
+function ResolutionSelect(props) {
+  const defaultProps = {
+    onChange() {},
+  };
+
+  const {onChange} = Object.assign(defaultProps, props);
+
+  const el = document.createElement('select');
+  el.className = 'select-control resolution-select';
+  el.innerHTML = `\
+    <option value="32" selected>32x32</option>
+    <option value="256">256x256</option>
+    <option value="1024">1024x1024</option>
+  `;
+  el.addEventListener('change', onChange);
+
+  return {el};
+}
+
 export default function Menu(props = {}) {
   const defaultProps = {
     defaultBrush: 'paint',
@@ -27,10 +46,11 @@ export default function Menu(props = {}) {
     onBrushChange() {},
     onBrushSizeChange() {},
     onBrushColorChange() {},
-    onPaperColorChange() {},
     onClearButtonClick() {},
     onDropProbabilityChange() {},
     onFillButtonClick() {},
+    onPaperColorChange() {},
+    onResolutionChange() {},
   };
   const {
     defaultBrush,
@@ -39,10 +59,11 @@ export default function Menu(props = {}) {
     onBrushChange,
     onBrushSizeChange,
     onBrushColorChange,
-    onPaperColorChange,
-    onFillButtonClick,
-    onDropProbabilityChange,
     onClearButtonClick,
+    onDropProbabilityChange,
+    onFillButtonClick,
+    onResolutionChange,
+    onPaperColorChange,
   } = Object.assign(defaultProps, props);
 
   const Icon = variant =>
@@ -142,10 +163,15 @@ export default function Menu(props = {}) {
     menuItems: [paperColorPicker, fillButton, clearButton],
   });
 
+  const menuListResolution = MenuList({
+    menuItems: [ResolutionSelect({onChange: onResolutionChange})],
+  });
+
   const container = document.createElement('div');
   container.className = 'canvas-menu';
   container.appendChild(menuListBrush.el);
   container.appendChild(menuListPaint.el);
+  container.appendChild(menuListResolution.el);
 
   return {el: container};
 }

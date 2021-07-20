@@ -3,7 +3,7 @@ import './index.css';
 
 import CanvasContainer from './canvas';
 import Menu from './menu';
-import {Button} from './components/Button'
+import {Button} from './components/Button';
 
 document.addEventListener('DOMContentLoaded', () => {
   init();
@@ -18,8 +18,7 @@ function init() {
   const canvasScale = 0.1;
   const canvasWidth = 320;
   const canvasHeight = 320;
-  const patternWidth = 20;
-  const patternHeight = 20;
+  const patternSize = 20;
 
   const sourceCanvas = new CanvasContainer({
     brushColor: defaultBrushColor,
@@ -29,8 +28,7 @@ function init() {
     canvasScale,
     canvasWidth,
     canvasHeight,
-    patternWidth,
-    patternHeight,
+    patternSize,
   });
   sourceCanvas.initDOMElements(true);
   sourceCanvas.setupBrush(defaultBrushType);
@@ -39,8 +37,7 @@ function init() {
     canvasScale,
     canvasWidth,
     canvasHeight,
-    patternWidth,
-    patternHeight,
+    patternSize,
   });
   targetCanvas.initDOMElements(false);
   targetCanvas.clearForeground();
@@ -68,6 +65,12 @@ function init() {
     },
     onFillButtonClick() {
       sourceCanvas.fillForeground();
+    },
+    onResolutionChange(event) {
+      const targetSize = Number(event.target.value);
+      sourceCanvas.updateCanvasSize(targetSize);
+      sourceCanvas.fillForeground();
+      targetCanvas.updateCanvasSize(targetSize);
     },
   });
 

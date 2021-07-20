@@ -57,6 +57,10 @@
   color: white;
 }
 
+.menu-list .resolution-select {
+  min-width: 7rem;
+}
+
 .dropdown {
   position: relative;
 }
