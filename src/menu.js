@@ -40,7 +40,6 @@ function ResolutionSelect(props) {
 
 export default function Menu(props = {}) {
   const defaultProps = {
-    defaultBrush: 'paint',
     defaultBrushColor: '#000000',
     defaultPaperColor: '#ffffff',
     onBrushChange() {},
@@ -53,7 +52,6 @@ export default function Menu(props = {}) {
     onResolutionChange() {},
   };
   const {
-    defaultBrush,
     defaultBrushColor,
     defaultPaperColor,
     onBrushChange,
