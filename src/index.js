@@ -23,6 +23,7 @@ function init() {
   const canvasHeight = 320;
   const patternSize = 20;
   const historySize = 10;
+  const transitionDurationMS = 500;
 
   const undoHistory = UndoHistory(historySize, {
     onUpdate() {
@@ -43,6 +44,7 @@ function init() {
   });
 
   const sourceCanvas = new CanvasContainer({
+    id: 'source',
     brushColor: defaultBrushColor,
     brushSize: defaultBrushSize,
     paperColor: defaultPaperColor,
@@ -52,7 +54,7 @@ function init() {
     canvasWidth,
     canvasHeight,
     patternSize,
-    onBrushStrokeEnd() {
+    onCanvasUpdate() {
       undoHistory.push(sourceCanvas.getImageData());
     },
   });
@@ -60,13 +62,13 @@ function init() {
   sourceCanvas.setupBrush(defaultBrushType);
 
   const targetCanvas = new CanvasContainer({
+    id: 'target',
     canvasScale,
     canvasWidth,
     canvasHeight,
     patternSize,
   });
   targetCanvas.initDOMElements(false);
-  targetCanvas.clearForeground();
 
   const menu = Menu({
     defaultBrushColor,
@@ -88,11 +90,9 @@ function init() {
     },
     onClearButtonClick() {
       sourceCanvas.clearForeground();
-      undoHistory.push(sourceCanvas.getImageData());
     },
     onFillButtonClick() {
       sourceCanvas.fillForeground();
-      undoHistory.push(sourceCanvas.getImageData());
     },
     onUndoButtonClick() {
       if (!undoHistory.atStart) {
@@ -120,8 +120,7 @@ function init() {
     content: 'copy image data \u203A',
     onClick() {
       const imageData = sourceCanvas.getImageData();
-      targetCanvas.putImageData(imageData);
-      console.log(imageData);
+      targetCanvas.putImageDataInterpolated(imageData, transitionDurationMS);
     },
   });
 
@@ -145,5 +144,6 @@ function init() {
     root.appendChild(frag);
   }
 
+  targetCanvas.clearForeground();
   undoHistory.reset(sourceCanvas.getImageData());
 }
