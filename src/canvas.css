@@ -39,3 +39,7 @@
   z-index: 1;
   cursor: crosshair;
 }
+
+.dropzone-active {
+  border-color: rgba(0, 127, 255, 0.75);
+}

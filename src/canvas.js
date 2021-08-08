@@ -1,27 +1,40 @@
 import {BasicBrush, Eraser} from './brushes';
 import './canvas.css';
 
+function checkerboard(context, patternSize, patternColor) {
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  const halfSize = patternSize / 2;
+  c.width = patternSize;
+  c.height = patternSize;
+  ctx.fillStyle = patternColor;
+  ctx.fillRect(0, 0, halfSize, halfSize);
+  ctx.fillRect(halfSize, halfSize, halfSize, halfSize);
+  return context.createPattern(c, 'repeat');
+}
+
 function BackgroundCanvas(props) {
   // patterned background canvas
-  const patternCanvas = document.createElement('canvas');
-  const patternCtx = patternCanvas.getContext('2d');
-  const halfSize = props.patternSize / 2;
-  patternCanvas.width = props.patternSize;
-  patternCanvas.height = props.patternSize;
-  patternCtx.fillStyle = props.patternColor;
-  patternCtx.fillRect(0, 0, halfSize, halfSize);
-  patternCtx.fillRect(halfSize, halfSize, halfSize, halfSize);
-
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-  const pattern = context.createPattern(patternCanvas, 'repeat');
+  const pattern = checkerboard(context, props.patternSize, props.patternColor);
   canvas.className = 'canvas-back';
   canvas.width = props.width;
   canvas.height = props.height;
   context.fillStyle = pattern;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
-  return {context, el: canvas};
+  return {
+    context,
+    el: canvas,
+    resize(width, height) {
+      canvas.width = width;
+      canvas.height = height;
+      context.fillStyle = pattern;
+      context.fillRect(0, 0, width, height);
+      context.save();
+    },
+  };
 }
 
 function ForegroundCanvas(props) {
@@ -31,7 +44,7 @@ function ForegroundCanvas(props) {
     props.handleCanvasMouseDown(x, y, event.shiftKey);
     canvas.addEventListener('mousemove', onCanvasMouseMove, false);
     canvas.addEventListener('mouseout', onCanvasMouseOut, false);
-    window.addEventListener('mouseup', onCanvasMouseUp, false);
+    document.addEventListener('mouseup', onCanvasMouseUp, false);
   }
 
   function onCanvasMouseMove(event) {
@@ -59,17 +72,27 @@ function ForegroundCanvas(props) {
     canvas.removeEventListener('mousemove', onCanvasMouseMove, false);
     canvas.removeEventListener('mouseout', onCanvasMouseOut, false);
     canvas.removeEventListener('mouseover', onCanvasMouseOver, false);
-    window.removeEventListener('mouseup', onCanvasMouseUp, false);
+    document.removeEventListener('mouseup', onCanvasMouseUp, false);
   }
 
-  function dropRandom(dropProb) {
-    for (let x = 0; x < canvas.width; ++x) {
-      for (let y = 0; y < canvas.height; ++y) {
-        if (Math.random() <= dropProb) {
-          context.clearRect(x, y, 1, 1);
-        }
+  function onCanvasDragDrop(event) {
+    // prevent default action (open as link for some elements)
+    event.preventDefault();
+    props.handleCanvasDragDrop(event);
+  }
+
+  function dropRandomPixels(dropProb) {
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const numPixels = imageData.data.length;
+    for (let i = 0; i < numPixels; i += 4) {
+      if (Math.random() <= dropProb) {
+        imageData.data[i] = 0;
+        imageData.data[i + 1] = 0;
+        imageData.data[i + 2] = 0;
+        imageData.data[i + 3] = 0;
       }
     }
+    context.putImageData(imageData, 0, 0);
   }
 
   const canvas = document.createElement('canvas');
@@ -78,48 +101,42 @@ function ForegroundCanvas(props) {
   canvas.width = props.width;
   canvas.height = props.height;
   context.imageSmoothingEnabled = false;
-  context.clearRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = props.fillColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.save();
 
   if (typeof props.handleCanvasMouseDown === 'function') {
     canvas.addEventListener('mousedown', onCanvasMouseDown, false);
+    /** prevent default to allow drop  */
+    document.addEventListener('dragover', event => event.preventDefault());
+    canvas.addEventListener('dragenter', props.handleCanvasDragEnter, false);
+    canvas.addEventListener('dragleave', props.handleCanvasDragLeave, false);
+    canvas.addEventListener('drop', onCanvasDragDrop, false);
   }
 
   return {
     context,
     el: canvas,
     fill(fillColor) {
-      console.debug('ForegroundCanvas.fill', fillColor);
       context.save();
       context.globalCompositeOperation = 'source-over';
       context.fillStyle = fillColor;
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.restore();
     },
-    clear(dropProb) {
+    clear(dropProb = 1) {
       context.save();
-      if (dropProb < 1.0) {
-        dropRandom(dropProb);
+      if (dropProb < 1) {
+        dropRandomPixels(dropProb);
       } else {
         context.clearRect(0, 0, canvas.width, canvas.height);
       }
-
       context.restore();
     },
-    clear10() {
-      console.debug('ForegroundCanvas.clear10');
-      context.save();
-      for (let x = 0; x < canvas.width; x++) {
-        for (let y = 0; y < canvas.height; y++) {
-           if (Math.random() < 0.1)
-             context.clearRect(x,y,1,1);
-        }
-      }
-      context.restore();
+    resize(width, height) {
+      canvas.width = width;
+      canvas.height = height;
     },
-
   };
 }
 
@@ -130,17 +147,17 @@ const defaultProps = {
   canvasScale: 1,
   canvasWidth: 320,
   canvasHeight: 320,
-  patternSize: 20,
+  paperColor: 'rgba(0,0,0,0)',
   patternColor: 'rgba(0,0,0,0.1)',
-  handleCanvasMouseDown() {},
-  handleCanvasMouseMove() {},
-  handleCanvasMouseUp() {},
+  patternSize: 20,
+  onCanvasUpdate() {},
 };
 
 export default class CanvasContainer {
   constructor(props) {
     const {
-      color,
+      id,
+      brushColor,
       brushSize,
       brushType,
       canvasScale,
@@ -150,21 +167,25 @@ export default class CanvasContainer {
       paperColor,
       patternColor,
       patternSize,
+      onCanvasUpdate,
     } = Object.assign(defaultProps, props);
 
-    this.color = color;
+    this.id = id;
+    this.brushColor = brushColor;
     this.brushSize = brushSize;
     this.brushType = brushType;
     this.canvasScale = canvasScale;
     this.dropProbability = dropProbability;
     this.paperColor = paperColor;
     this.patternColor = patternColor;
+    this.patternSize = patternSize;
+    this.onCanvasUpdate = onCanvasUpdate;
 
     this.canvasHeight = canvasHeight;
     this.canvasWidth = canvasWidth;
     this.canvasHeightComputed = Math.ceil(canvasHeight * canvasScale);
     this.canvasWidthComputed = Math.ceil(canvasWidth * canvasScale);
-    this.patternSize = Math.ceil(patternSize * canvasScale);
+    this.patternSizeComputed = Math.ceil(patternSize * canvasScale);
 
     this.el = null;
     this.brush = null;
@@ -172,26 +193,35 @@ export default class CanvasContainer {
     this.foregroundCanvas = null;
   }
 
-  initDOMElements(initBrushEventHandlers = false) {
+  initDOMElements(initCanvasEventHandlers = false) {
     const bg = BackgroundCanvas({
       width: this.canvasWidthComputed,
       height: this.canvasHeightComputed,
-      patternSize: this.patternSize,
+      patternSize: this.patternSizeComputed,
       patternColor: this.patternColor,
     });
 
     const fg = ForegroundCanvas({
       width: this.canvasWidthComputed,
       height: this.canvasHeightComputed,
-      fillColor: this.color,
-      handleCanvasMouseDown: initBrushEventHandlers
+      fillColor: this.paperColor,
+      handleCanvasMouseDown: initCanvasEventHandlers
         ? this.brushStrokeStart.bind(this)
         : null,
-      handleCanvasMouseMove: initBrushEventHandlers
+      handleCanvasMouseMove: initCanvasEventHandlers
         ? this.brushStrokeMove.bind(this)
         : null,
-      handleCanvasMouseUp: initBrushEventHandlers
+      handleCanvasMouseUp: initCanvasEventHandlers
         ? this.brushStrokeEnd.bind(this)
+        : null,
+      handleCanvasDragEnter: initCanvasEventHandlers
+        ? this.canvasDropZoneActivate.bind(this)
+        : null,
+      handleCanvasDragLeave: initCanvasEventHandlers
+        ? this.canvasDropZoneDeactivate.bind(this)
+        : null,
+      handleCanvasDragDrop: initCanvasEventHandlers
+        ? this.handleCanvasDragDrop.bind(this)
         : null,
     }); fg.clear();
 
@@ -222,15 +252,27 @@ export default class CanvasContainer {
       case 'draw':
       default:
         this.brush = new BasicBrush(this.foregroundCanvas.context);
-        this.brush.updateColor(this.color);
+        this.brush.updateBrushColor(this.brushColor);
         this.brush.updateBrushSize(this.brushSize);
         break;
     }
   }
 
-  updateBrushColor(color) {
-    this.color = color;
-    this.brush.updateColor(color);
+  resizeCanvas(targetSize) {
+    this.canvasScale = targetSize / this.canvasHeight;
+    this.canvasHeightComputed = Math.ceil(this.canvasHeight * this.canvasScale);
+    this.canvasWidthComputed = Math.ceil(this.canvasWidth * this.canvasScale);
+    this.patternSizeComputed = Math.ceil(this.patternSize * this.canvasScale);
+
+    this.foregroundCanvas.resize(
+      this.canvasWidthComputed,
+      this.canvasHeightComputed
+    );
+  }
+
+  updateBrushColor(brushColor) {
+    this.brushColor = brushColor;
+    this.brush.updateBrushColor(brushColor);
   }
 
   updateBrushSize(brushSize) {
@@ -248,14 +290,14 @@ export default class CanvasContainer {
 
   fillForeground() {
     this.foregroundCanvas.fill(this.paperColor);
+    this.onCanvasUpdate();
   }
 
-  clearForeground() {
-    this.foregroundCanvas.clear(this.dropProbability);
-  }
-
-  clear10Foreground() {
-    this.foregroundCanvas.clear10();
+  clearForeground(dropProbability) {
+    this.foregroundCanvas.clear(
+      dropProbability == null ? this.dropProbability : dropProbability
+    );
+    this.onCanvasUpdate();
   }
 
   getImageData() {
@@ -271,6 +313,52 @@ export default class CanvasContainer {
     this.foregroundCanvas.context.putImageData(imageData, 0, 0);
   }
 
+  drawImage(image, dx = 0, dy = 0) {
+    this.foregroundCanvas.context.drawImage(
+      image,
+      0,
+      0,
+      this.canvasWidthComputed,
+      this.canvasHeightComputed
+    );
+    this.onCanvasUpdate();
+  }
+
+  putImageDataInterpolated(imageData, transitionDurationMS = 1000) {
+    const startTime = Date.now();
+    const targetCtx = this.foregroundCanvas.context;
+    const interpolationRate = 1 / transitionDurationMS;
+
+    const oldCanvas = document.createElement('canvas');
+    oldCanvas.width = this.canvasWidthComputed;
+    oldCanvas.height = this.canvasHeightComputed;
+    oldCanvas.getContext('2d').drawImage(this.foregroundCanvas.el, 0, 0);
+    
+    const tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = this.canvasWidthComputed;
+    tmpCanvas.height = this.canvasHeightComputed;
+    tmpCanvas.getContext('2d').putImageData(imageData, 0, 0);
+
+    function lerp() {
+      const dt = Date.now() - startTime;
+      const alpha = interpolationRate * dt;
+      targetCtx.globalAlpha = 1 - alpha;
+      targetCtx.drawImage(oldCanvas, 0, 0);
+      targetCtx.globalAlpha = alpha;
+      targetCtx.drawImage(tmpCanvas, 0, 0);
+      if (dt < transitionDurationMS) {
+        requestAnimationFrame(lerp);
+        return;
+      }
+      oldCanvas.remove();
+      tmpCanvas.remove();
+      targetCtx.restore();
+    }
+
+    targetCtx.save();
+    requestAnimationFrame(lerp);
+  }
+
   computeCanvasX(xValue) {
     const xRatio = this.canvasWidth / this.foregroundCanvas.el.clientWidth;
     return Math.ceil(xValue * xRatio * this.canvasScale);
@@ -279,6 +367,25 @@ export default class CanvasContainer {
   computeCanvasY(yValue) {
     const yRatio = this.canvasHeight / this.foregroundCanvas.el.clientHeight;
     return Math.ceil(yValue * yRatio * this.canvasScale);
+  }
+
+  canvasDropZoneActivate() {
+    this.el.classList.add('dropzone-active');
+  }
+
+  canvasDropZoneDeactivate() {
+    this.el.classList.remove('dropzone-active');
+  }
+
+  async handleCanvasDragDrop(event) {
+    this.canvasDropZoneDeactivate();
+
+    if (!event.dataTransfer.files.length) return;
+
+    const file = await event.dataTransfer.files.item(0);
+    const image = new Image();
+    image.onload = () => this.drawImage(image);
+    image.src = URL.createObjectURL(file);
   }
 
   brushStrokeStart(x, y, shiftKey) {
@@ -295,5 +402,6 @@ export default class CanvasContainer {
 
   brushStrokeEnd() {
     this.brush.strokeEnd();
+    this.onCanvasUpdate();
   }
 }

@@ -7,6 +7,8 @@
     "browser": true
   },
   "rules": {
+    "eqeqeq": ["error", "always", {"null": "ignore"}],
+    "no-constant-condition": ["error", {"checkLoops": false}],
     "node/no-unsupported-features/es-syntax": [
       "error",
       {"ignores": ["modules"]}

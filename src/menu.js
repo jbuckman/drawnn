@@ -1,11 +1,8 @@
 import './menu.css';
 
-import {IconButton} from './components/Button';
+import {Button} from './components/Button';
 import {ColorPicker} from './components/ColorPicker';
-import {
-  NumberPickerThing,
-  IconNumberPickerThing,
-} from './components/NumberPicker';
+import {NumberPicker} from './components/NumberPicker';
 
 function MenuList(props = {}) {
   const defaultProps = {
@@ -22,32 +19,59 @@ function MenuList(props = {}) {
   return {el};
 }
 
+function ResolutionSelect(props) {
+  const defaultProps = {
+    onChange() {},
+  };
+
+  const {onChange} = Object.assign(defaultProps, props);
+
+  const el = document.createElement('select');
+  el.className = 'select-control resolution-select';
+  el.innerHTML = `\
+    <option value="32">32x32</option>
+    <option value="256" selected>256x256</option>
+    <option value="1024">1024x1024</option>
+  `;
+  el.addEventListener('change', onChange);
+
+  return {el};
+}
+
 export default function Menu(props = {}) {
   const defaultProps = {
-    defaultBrush: 'paint',
     defaultBrushColor: '#000000',
     defaultPaperColor: '#FFFFFF',
     onBrushChange() {},
     onBrushSizeChange() {},
     onBrushColorChange() {},
-    onPaperColorChange() {},
     onClearButtonClick() {},
     onDropProbabilityChange() {},
     onFillButtonClick() {},
+    onPaperColorChange() {},
+    onRedoButtonClick() {},
+    onResolutionChange() {},
+    onUndoButtonClick() {},
   };
   const {
-    defaultBrush,
     defaultBrushColor,
     onBrushChange,
     onBrushSizeChange,
     defaultPaperColor,
     onBrushColorChange,
-    onPaperColorChange,
-    onFillButtonClick,
-    onDropProbabilityChange,
     onClearButtonClick,
-    onClear10ButtonClick,
+    onDropProbabilityChange,
+    onFillButtonClick,
+    onResolutionChange,
+    onRedoButtonClick,
+    onPaperColorChange,
+    onUndoButtonClick,
   } = Object.assign(defaultProps, props);
+
+  const Icon = variant =>
+    `<svg class="icon" fill="currentColor">
+    <use xlink:href="icons.svg#${variant}"></use>
+    </svg>`;
 
   // Menu list items for brushes (draw and erase)
   const brushColorPicker = ColorPicker('brush', {
@@ -57,36 +81,45 @@ export default function Menu(props = {}) {
       onBrushColorChange(target.value);
     },
   });
-  const drawButton = IconButton({
+  const drawButton = Button({
     id: 'drawButton',
     title: 'Draw',
-    variant: 'draw',
+    className: 'active',
+    content: Icon('draw'),
     onClick: () => {
-      drawButton.activateButton();
-      eraseButton.deactivateButton();
+      drawButton.addClass('active');
+      eraseButton.removeClass('active');
       onBrushChange('draw');
     },
   });
-  drawButton.activateButton();
-  const eraseButton = IconButton({
+  const eraseButton = Button({
     id: 'eraseButton',
     title: 'Erase',
-    variant: 'eraser',
+    content: Icon('eraser'),
     onClick: () => {
-      drawButton.deactivateButton();
-      eraseButton.activateButton();
+      drawButton.removeClass('active');
+      eraseButton.addClass('active');
       onBrushChange('erase');
     },
   });
-  const brushSizePicker = NumberPickerThing({
+  const brushSizeToggle = Button({
+    id: 'brushSizeToggle',
+    title: 'Brush size',
+    className: 'dropdown-toggle',
+    content: '1px',
+  });
+  const brushSizePicker = NumberPicker({
     id: 'brushSizeRange',
     label: 'Brush size',
+    toggleEl: brushSizeToggle.el,
     defaultValue: 1,
     minValue: 1,
     maxValue: 32,
     units: 'px',
     onChange(event) {
-      onBrushSizeChange(event.target.value);
+      const brushSize = Number(event.target.value);
+      brushSizeToggle.el.textContent = `${brushSize}px`;
+      onBrushSizeChange(brushSize);
     },
   });
 
@@ -98,26 +131,45 @@ export default function Menu(props = {}) {
       onPaperColorChange(target.value);
     },
   });
-  const fillButton = IconButton({
+  const fillButton = Button({
     id: 'fillButton',
     title: 'Fill',
-    variant: 'color-fill',
+    content: Icon('color-fill'),
     onClick: onFillButtonClick,
   });
-  const clearButton = IconNumberPickerThing({
+  const clearButtonToggle = Button({
+    id: 'clearButtonToggle',
+    title: 'Clear',
+    content: Icon('clear'),
+    onClick: onClearButtonClick,
+  });
+  const clearButton = NumberPicker({
     id: 'clearButton',
     label: 'Clear prob',
     title: 'Clear',
-    iconVariant: 'clear',
+    toggleEl: clearButtonToggle.el,
     defaultValue: 100,
     minValue: 1,
-    maxValue: 100,
-    step: 1,
     units: '%',
-    onClick: onClearButtonClick,
     onChange(event) {
-      onDropProbabilityChange(event.target.value / 100);
+      const dropProbability = Number(event.target.value);
+      onDropProbabilityChange(dropProbability / 100);
     },
+  });
+
+  // Menu list items for canvas resolution, undo and redo
+  const resolutionSelect = ResolutionSelect({onChange: onResolutionChange});
+  const undoButton = Button({
+    id: 'undoButton',
+    title: 'Undo',
+    content: Icon('undo'),
+    onClick: onUndoButtonClick,
+  });
+  const redoButton = Button({
+    id: 'redoButton',
+    title: 'Redo',
+    content: Icon('redo'),
+    onClick: onRedoButtonClick,
   });
 
   const menuListBrush = MenuList({
@@ -128,10 +180,28 @@ export default function Menu(props = {}) {
     menuItems: [paperColorPicker, fillButton, clearButton],
   });
 
+  const menuListResolution = MenuList({
+    menuItems: [resolutionSelect, undoButton, redoButton],
+  });
+
   const container = document.createElement('div');
   container.className = 'canvas-menu';
   container.appendChild(menuListBrush.el);
   container.appendChild(menuListPaint.el);
+  container.appendChild(menuListResolution.el);
 
-  return {el: container};
+  return {el: container,
+    enableUndoButton() {
+      undoButton.el.disabled = false;
+    },
+    disableUndoButton() {
+      undoButton.el.disabled = true;
+    },
+    enableRedoButton() {
+      redoButton.el.disabled = false;
+    },
+    disableRedoButton() {
+      redoButton.el.disabled = true;
+    },
+  };
 }

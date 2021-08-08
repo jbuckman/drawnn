@@ -18,27 +18,27 @@ function datarep(shape) {
         ]};
 }
 
-function createModel() {
-    // Create a sequential model
-    const model = tf.sequential();
-
-    // Add a single input layer
-    model.add(tf.layers.dense({inputDim: 20, units: 32, useBias: true, activation: 'relu'}));
-
-    // hidden layer
-    model.add(tf.layers.dense({units: 64, useBias: true, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 128, useBias: true, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 128, useBias: true, activation: 'relu'}));
-    // // Add an output layer
-    model.add(tf.layers.dense({units: 3, useBias: true}));
-    self.model = model;
-    return model;
-}
+// function createModel() {
+//     // Create a sequential model
+//     const model = tf.sequential();
+//
+//     // Add a single input layer
+//     model.add(tf.layers.dense({inputDim: 20, units: 32, useBias: true, activation: 'relu'}));
+//
+//     // hidden layer
+//     model.add(tf.layers.dense({units: 64, useBias: true, activation: 'relu'}));
+//     model.add(tf.layers.dense({units: 128, useBias: true, activation: 'relu'}));
+//     model.add(tf.layers.dense({units: 128, useBias: true, activation: 'relu'}));
+//     // // Add an output layer
+//     model.add(tf.layers.dense({units: 3, useBias: true}));
+//     self.model = model;
+//     return model;
+// }
 
 class SinLayer extends tf.layers.Layer {
   call(input) {
     return tf.tidy(() => {
-      return tf.sin(input[0]);
+      return tf.add(input[0], tf.mul(.1, tf.sin(tf.sin(tf.mul(10., input[0])))));
     });
   }
   static get className() {
@@ -47,28 +47,35 @@ class SinLayer extends tf.layers.Layer {
 }
 tf.serialization.registerClass(SinLayer);
 
-// function createModel() {
-//     const sl = (new SinLayer());
-//     const input = tf.input({shape: [2]});
-//     const dense1a = tf.layers.dense({units: 16, useBias: true, activation: 'relu'}).apply(input);
-//     const dense1b = tf.layers.dense({units: 16, useBias: true}).apply(input);
-//     const concat1 = tf.layers.concatenate().apply([dense1a, sl.apply(dense1b)]);
-//     const dense2a = tf.layers.dense({units: 32, useBias: true, activation: 'relu'}).apply(concat1);
-//     const dense2b = tf.layers.dense({units: 32, useBias: true}).apply(concat1);
-//     const concat2 = tf.layers.concatenate().apply([dense2a, sl.apply(dense2b)]);
-//     const dense3a = tf.layers.dense({units: 64, useBias: true, activation: 'relu'}).apply(concat2);
-//     const dense3b = tf.layers.dense({units: 64, useBias: true}).apply(concat2);
-//     const concat3 = tf.layers.concatenate().apply([dense3a, sl.apply(dense3b)]);
-//     const dense4a = tf.layers.dense({units: 64, useBias: true, activation: 'relu'}).apply(concat3);
-//     const dense4b = tf.layers.dense({units: 64, useBias: true}).apply(concat3);
-//     const concat4 = tf.layers.concatenate().apply([dense4a, sl.apply(dense4b)]);
-//     const output =
-//         tf.layers.dense({units: 3, useBias: true}).apply(concat4);
-//
-//     const model = tf.model({inputs: input, outputs: output});
-//     self.model = model;
-//     return model;
-// }
+function createModel() {
+    const input = tf.input({shape: [20]});
+    // const input = tf.input({shape: [2]});
+    // const dense1 = tf.layers.dense({units: 18, useBias: true}).apply(input);
+    // const sl = (new SinLayer()).apply(dense1);
+    // const concat1 = tf.layers.concatenate().apply([dense1, sl]);
+    // const dense2 = tf.layers.dense({units: 32, useBias: true, activation: 'relu'}).apply(concat1);
+    const dense2 = tf.layers.dense({units: 32, useBias: true, activation: 'relu'}).apply(input);
+    const dense3 = tf.layers.dense({units: 64, useBias: true, activation: 'relu'}).apply(dense2);
+    const dense4 = tf.layers.dense({units: 128, useBias: true, activation: 'relu'}).apply(dense3);
+    const dense5 = tf.layers.dense({units: 128, useBias: true, activation: 'relu'}).apply(dense4);
+    const output = tf.layers.dense({units: 3, useBias: true}).apply(dense5);
+
+
+    /*
+    const sl = (new SinLayer());
+    const input = tf.input({shape: [2]});
+    const dense2 = tf.layers.dense({units: 32, useBias: true}).apply(input);
+    const dense3 = tf.layers.dense({units: 64, useBias: true}).apply(sl.apply(dense2));
+    const dense4 = tf.layers.dense({units: 128, useBias: true}).apply(sl.apply(dense3));
+    const dense5 = tf.layers.dense({units: 128, useBias: true}).apply(sl.apply(dense4));
+    const output = tf.layers.dense({units: 3, useBias: true}).apply(sl.apply(dense5));
+    */
+
+    const model = tf.model({inputs: input, outputs: output});
+    self.model = model;
+    return model;
+}
+
 
 async function renderFromModel(model, shape) {
     var inputs = [];

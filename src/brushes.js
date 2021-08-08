@@ -11,7 +11,7 @@ export class BasicBrush {
     this.updateBrushSize(DEFAULT_BRUSH_SIZE);
   }
 
-  updateColor(brushColor) {
+  updateBrushColor(brushColor) {
     console.log(this.brushColor, brushColor);
     this.brushColor = brushColor;
   }

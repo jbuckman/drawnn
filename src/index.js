@@ -7,13 +7,16 @@ import MyWorker from "worker-loader!./training.worker.js";
 
 let worker = new MyWorker();
 var training = false;
-import {Button} from './components/Button'
+import UndoHistory, {testHistory} from './history';
+import {Button} from './components/Button';
 
 document.addEventListener('DOMContentLoaded', () => {
   init();
 });
 
 function init() {
+  testHistory();
+
   const defaultBrushSize = 1;
   const defaultBrushColor = '#000000';
   const defaultDropProb = 1.0;
@@ -33,30 +36,53 @@ function init() {
   var interpoTimeStart;
   var dirty = false;
   var firstEverInterpo = true;
+  const historySize = 10;
+  const transitionDurationMS = 10000;
+
+  const undoHistory = UndoHistory(historySize, {
+    onUpdate() {
+      console.debug(undoHistory.toString());
+
+      if (undoHistory.atStart) {
+        menu.disableUndoButton();
+      } else {
+        menu.enableUndoButton();
+      }
+
+      if (undoHistory.atEnd) {
+        menu.disableRedoButton();
+      } else {
+        menu.enableRedoButton();
+      }
+    },
+  });
 
   const sourceCanvas = new CanvasContainer({
+    id: 'source',
     brushColor: defaultBrushColor,
     brushSize: defaultBrushSize,
     paperColor: defaultPaperColor,
     dropProbability: defaultDropProb,
+    trackHistory: true,
     canvasScale,
     canvasWidth,
     canvasHeight,
-    patternWidth,
-    patternHeight,
+    patternSize,
+    onCanvasUpdate() {
+      undoHistory.push(sourceCanvas.getImageData());
+    },
   });
   sourceCanvas.initDOMElements(true);
   sourceCanvas.setupBrush(defaultBrushType);
 
   const targetCanvas = new CanvasContainer({
+    id: 'target',
     canvasScale,
     canvasWidth,
     canvasHeight,
-    patternWidth,
-    patternHeight,
+    patternSize,
   });
   targetCanvas.initDOMElements(false);
-  targetCanvas.clearForeground();
 
   const menu = Menu({
     defaultBrushColor,
@@ -81,6 +107,25 @@ function init() {
     },
     onFillButtonClick() {
       sourceCanvas.fillForeground();
+    },
+    onUndoButtonClick() {
+      if (!undoHistory.atStart) {
+        undoHistory.undo();
+        sourceCanvas.putImageData(undoHistory.currentItem);
+      }
+    },
+    onRedoButtonClick() {
+      if (!undoHistory.atEnd) {
+        undoHistory.redo();
+        sourceCanvas.putImageData(undoHistory.currentItem);
+      }
+    },
+    onResolutionChange(event) {
+      const targetSize = Number(event.target.value);
+      sourceCanvas.resizeCanvas(targetSize);
+      sourceCanvas.clearForeground();
+      targetCanvas.resizeCanvas(targetSize);
+      undoHistory.reset(sourceCanvas.getImageData());
     },
   });
 
@@ -107,9 +152,15 @@ function init() {
 
   const dataButton = Button({
     className: 'data-button',
-    textContent: 'start training \u203A',
+    content: 'start training \u203A',
     onClick() {
       if (!training) {
+        training = true;
+        firstEverInterpo = true;
+        this.textContent = 'starting...';
+        targetCanvas.clearForeground(1.);
+
+
         const imageData = sourceCanvas.getImageData();
         var dataset_inputs = [];
         var dataset_outputs = [];
@@ -126,11 +177,12 @@ function init() {
               dataset_outputs.push(output);
             }
         }}
-        training = true;
-        firstEverInterpo = true;
-        this.textContent = 'starting... \u203A';
         worker = new MyWorker();
         worker.onmessage = event => {
+          const img = new ImageData(new Uint8ClampedArray(event.data.image), sourceCanvas.canvasHeightComputed, sourceCanvas.canvasHeightComputed);
+          targetCanvas.putImageDataInterpolated(img, transitionDurationMS);
+          if (firstEverInterpo) {this.textContent = 'stop training \u203A'; firstEverInterpo = false;}
+          /*
           const data = event.data;
           if (data.command == 'update') {
             if (firstEverInterpo) {
@@ -145,12 +197,12 @@ function init() {
               interpoTimeStart = Date.now();
               dirty = true;
             }
-          }
+          } */
         };
         worker.postMessage({command: 'start',
                             width: imageData.width,
                             height: imageData.height,
-                            res: canvasResolution,
+                            res: sourceCanvas.canvasHeightComputed,
                             renderRate: renderRate,
                             inputs: dataset_inputs,
                             outputs: dataset_outputs})
@@ -159,6 +211,12 @@ function init() {
         this.textContent = 'start training \u203A';
         worker.terminate();
       }
+/*
+    content: 'copy image data \u203A',
+    onClick() {
+      const imageData = sourceCanvas.getImageData();
+      targetCanvas.putImageDataInterpolated(imageData, transitionDurationMS);
+*/
     },
   });
 
@@ -191,13 +249,16 @@ function init() {
   image.src = URL.createObjectURL(file);
   await new Promise(x => image.onload = x);
   const workCanvas = document.createElement('canvas');
-  workCanvas.width = canvasResolution;
-  workCanvas.height = canvasResolution;
+  workCanvas.width = sourceCanvas.canvasHeightComputed;
+  workCanvas.height = sourceCanvas.canvasHeightComputed;
   const ctx = workCanvas.getContext('2d');
-  ctx.drawImage(image, 0, 0, canvasResolution, canvasResolution);
+  ctx.drawImage(image, 0, 0, sourceCanvas.canvasHeightComputed, sourceCanvas.canvasHeightComputed);
   const imageData = ctx.getImageData(0, 0, image.width, image.height);
   sourceCanvas.putImageData(imageData)
 });
+
+  targetCanvas.clearForeground();
+  undoHistory.reset(sourceCanvas.getImageData());
 }
 
 
