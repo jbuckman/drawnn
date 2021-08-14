@@ -12,8 +12,8 @@ function ith_fourier(n,i) {
 
 function datarep(shape) {
     return function(coord) {
-        const x = coord[0]/shape;
-        const y = coord[1]/shape;
+        const x = 2*coord[0]/shape - 1;
+        const y = 2*coord[1]/shape - 1;
         return [
         x,//ith_fourier(x,1),ith_fourier(x,2),ith_fourier(x,3),ith_fourier(x,4),ith_fourier(x,5),ith_fourier(x,6),ith_fourier(x,7),ith_fourier(x,8),ith_fourier(x,9),
         y,//ith_fourier(y,1),ith_fourier(y,2),ith_fourier(y,3),ith_fourier(y,4),ith_fourier(y,5),ith_fourier(y,6),ith_fourier(y,7),ith_fourier(y,8),ith_fourier(y,9),

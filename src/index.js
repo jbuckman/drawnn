@@ -37,7 +37,7 @@ function init() {
   var dirty = false;
   var firstEverInterpo = true;
   const historySize = 10;
-  const transitionDurationMS = 10000;
+  const transitionDurationMS = 5000;
 
   const undoHistory = UndoHistory(historySize, {
     onUpdate() {
@@ -178,10 +178,18 @@ function init() {
             }
         }}
         worker = new MyWorker();
+        var lastImgWrite = null;
         worker.onmessage = event => {
           const img = new ImageData(new Uint8ClampedArray(event.data.image), sourceCanvas.canvasHeightComputed, sourceCanvas.canvasHeightComputed);
-          if (firstEverInterpo) {targetCanvas.clearForeground(1.); this.textContent = 'stop training \u203A'; firstEverInterpo = false;}
-          targetCanvas.putImageDataInterpolated(img, transitionDurationMS);
+          if (lastImgWrite == null) {
+            targetCanvas.putImageData(img);
+            this.textContent = 'stop training \u203A';
+            lastImgWrite = Date.now();
+          }
+          else if (Date.now() - lastImgWrite > transitionDurationMS) {
+            targetCanvas.putImageDataInterpolated(img, transitionDurationMS);
+            lastImgWrite = Date.now();
+          }
           /*
           const data = event.data;
           if (data.command == 'update') {
@@ -207,9 +215,9 @@ function init() {
                             inputs: dataset_inputs,
                             outputs: dataset_outputs})
       } else {
-        training = false;
-        this.textContent = 'start training \u203A';
-        worker.terminate();
+          worker.terminate();
+          training = false;
+          this.textContent = 'start training \u203A';
       }
 /*
     content: 'copy image data \u203A',
