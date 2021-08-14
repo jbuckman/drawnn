@@ -5,7 +5,9 @@ function clamp(num, min, max) {
 };
 
 function ith_fourier(n,i) {
-    return Math.sin((2**i) * 2*Math.PI*n)
+    if (Math.sin((2**i) * 2*Math.PI*n) > 0) {return 1}
+    else {return 0}
+    // return Math.sin((2**i) * 2*Math.PI*n)
 }
 
 function datarep(shape) {
@@ -13,8 +15,8 @@ function datarep(shape) {
         const x = coord[0]/shape;
         const y = coord[1]/shape;
         return [
-        x,ith_fourier(x,1),ith_fourier(x,2),ith_fourier(x,3),ith_fourier(x,4),ith_fourier(x,5),ith_fourier(x,6),ith_fourier(x,7),ith_fourier(x,8),ith_fourier(x,9),
-        y,ith_fourier(y,1),ith_fourier(y,2),ith_fourier(y,3),ith_fourier(y,4),ith_fourier(y,5),ith_fourier(y,6),ith_fourier(y,7),ith_fourier(y,8),ith_fourier(y,9),
+        x,//ith_fourier(x,1),ith_fourier(x,2),ith_fourier(x,3),ith_fourier(x,4),ith_fourier(x,5),ith_fourier(x,6),ith_fourier(x,7),ith_fourier(x,8),ith_fourier(x,9),
+        y,//ith_fourier(y,1),ith_fourier(y,2),ith_fourier(y,3),ith_fourier(y,4),ith_fourier(y,5),ith_fourier(y,6),ith_fourier(y,7),ith_fourier(y,8),ith_fourier(y,9),
         ]};
 }
 
@@ -48,8 +50,8 @@ class SinLayer extends tf.layers.Layer {
 tf.serialization.registerClass(SinLayer);
 
 function createModel() {
-    const input = tf.input({shape: [20]});
-    // const input = tf.input({shape: [2]});
+    // const input = tf.input({shape: [20]});
+    const input = tf.input({shape: [2]});
     // const dense1 = tf.layers.dense({units: 18, useBias: true}).apply(input);
     // const sl = (new SinLayer()).apply(dense1);
     // const concat1 = tf.layers.concatenate().apply([dense1, sl]);

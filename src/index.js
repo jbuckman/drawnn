@@ -180,8 +180,8 @@ function init() {
         worker = new MyWorker();
         worker.onmessage = event => {
           const img = new ImageData(new Uint8ClampedArray(event.data.image), sourceCanvas.canvasHeightComputed, sourceCanvas.canvasHeightComputed);
+          if (firstEverInterpo) {targetCanvas.clearForeground(1.); this.textContent = 'stop training \u203A'; firstEverInterpo = false;}
           targetCanvas.putImageDataInterpolated(img, transitionDurationMS);
-          if (firstEverInterpo) {this.textContent = 'stop training \u203A'; firstEverInterpo = false;}
           /*
           const data = event.data;
           if (data.command == 'update') {
